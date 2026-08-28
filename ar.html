@@ -167,10 +167,15 @@
     });
     document.getElementById('tour-btn').addEventListener('click', function () { show(0); });
 
+    // Fixed screen-space offsets (px) so each label pill fans outward with a leader line.
+    var OFFSETS = { 1: [88, -18], 2: [8, 84], 3: [-70, -74], 4: [4, -90], 5: [-96, 10] };
+
     if (annos.length) {
       document.getElementById('hotspot-hint').hidden = false;
       document.getElementById('ar-toolbar').hidden = false;
       annos.forEach(function (a, i) {
+        var off = OFFSETS[a.id] || [80, -20];
+        var dx = off[0], dy = off[1];
         var btn = document.createElement('button');
         btn.type = 'button';
         btn.className = 'hotspot';
@@ -179,7 +184,14 @@
         btn.setAttribute('data-position', a.position);
         btn.setAttribute('data-normal', a.normal);
         btn.setAttribute('aria-label', a.title);
-        btn.innerHTML = '<span class="dot">' + a.id + '</span>';
+        btn.style.setProperty('--dx', dx + 'px');
+        btn.style.setProperty('--dy', dy + 'px');
+        btn.style.setProperty('--len', Math.hypot(dx, dy) + 'px');
+        btn.style.setProperty('--ang', Math.atan2(dy, dx) + 'rad');
+        btn.innerHTML =
+          '<span class="leader"></span>' +
+          '<span class="dot">' + a.id + '</span>' +
+          '<span class="pill">' + BV.escape(a.title) + '</span>';
         btn.addEventListener('click', function (ev) { ev.stopPropagation(); show(i); });
         mv.appendChild(btn);
       });
