@@ -133,29 +133,82 @@ body {
 /* ---- AR view ---- */
 .ar-head { display: flex; align-items: center; gap: 10px; padding: 2px 0 14px; }
 .ar-head .title { font-size: 17px; font-weight: 700; }
+/* Stage holds the model + leader-line overlay + description cards */
+.stage { position: relative; height: 56dvh; min-height: 360px; margin-top: 6px; }
 model-viewer {
-  width: 100%; height: 62dvh; min-height: 360px;
+  width: 100%; height: 100%;
   background: #fff; border: 1px solid var(--line); border-radius: var(--radius-lg);
   --poster-color: #fff;
-  --min-hotspot-opacity: 0.18; /* fade markers on the far side of the model */
+  --min-hotspot-opacity: 0.15;
 }
+.leaders { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 2; }
+.leader-line { stroke: var(--ink); stroke-width: 1.5; }
+.cards { position: absolute; inset: 0; pointer-events: none; z-index: 3; }
 
-/* Hotspot = anchor dot at the organelle + leader line + label pill offset outward */
+/* Numbered dot on the model */
 .hotspot {
   -webkit-appearance: none; appearance: none;
   border: none; background: none; padding: 0; margin: 0; cursor: pointer;
+  width: 26px; height: 26px;
 }
-.hotspot { width: 28px; height: 28px; }
 .hotspot .hs-dot {
   display: grid; place-items: center;
-  width: 28px; height: 28px; border-radius: 50%;
-  background: var(--primary); color: #fff;
-  font-size: 13px; font-weight: 700; line-height: 1;
-  border: 2px solid #fff; box-shadow: 0 2px 6px rgba(4,44,83,.35);
-  transition: transform .1s ease, background .1s ease;
+  width: 26px; height: 26px; border-radius: 50%;
+  background: var(--c, var(--primary)); color: #fff;
+  font-size: 12px; font-weight: 700; line-height: 1;
+  border: 2px solid #fff; box-shadow: 0 2px 6px rgba(4,44,83,.4);
+  transition: transform .1s ease;
 }
-.hotspot:active .hs-dot { transform: scale(0.92); }
-.hotspot.active .hs-dot { background: var(--accent); transform: scale(1.12); }
+.hotspot.active .hs-dot { transform: scale(1.18); }
+
+/* Description cards */
+.info-card {
+  position: absolute; pointer-events: auto;
+  width: 42%; max-width: 190px; max-height: 40%; overflow-y: auto;
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: 12px; padding: 9px 11px;
+  box-shadow: 0 4px 14px rgba(4,44,83,.14);
+  text-align: left; font: inherit; cursor: pointer;
+  transition: opacity .15s ease, box-shadow .15s ease, transform .1s ease;
+}
+.info-card.dim { opacity: .4; }
+.info-card.active { box-shadow: 0 0 0 2px var(--c, var(--primary)), 0 6px 18px rgba(4,44,83,.2); }
+.info-card:active { transform: scale(0.99); }
+.ic-head { display: flex; align-items: center; gap: 7px; margin-bottom: 4px; }
+.ic-num {
+  flex: 0 0 auto; width: 18px; height: 18px; border-radius: 50%;
+  background: var(--c, var(--primary)); color: #fff;
+  font-size: 11px; font-weight: 700; display: grid; place-items: center;
+}
+.ic-title { font-size: 12.5px; font-weight: 700; color: var(--c, var(--primary)); line-height: 1.15; }
+.ic-body { font-size: 11px; color: var(--ink-soft); line-height: 1.4; }
+.slot-top   { top: 4px;  left: 50%; transform: translateX(-50%); }
+.slot-right { top: 26%;  right: 4px; }
+.slot-left  { top: 26%;  left: 4px; }
+.slot-bl    { bottom: 6%; left: 4px; }
+.slot-br    { bottom: 6%; right: 4px; }
+
+/* Guided-tour chip in the header */
+.tour-chip {
+  -webkit-appearance: none; appearance: none;
+  display: inline-flex; align-items: center; gap: 6px;
+  border: 1.5px solid var(--line); background: var(--surface); color: var(--primary);
+  font-size: 12.5px; font-weight: 600; border-radius: 999px; padding: 7px 12px;
+  min-height: 40px; cursor: pointer;
+}
+.tour-chip:active { background: var(--primary-tint); }
+
+/* Bottom control toolbar */
+.toolbar { display: flex; justify-content: space-between; gap: 6px; margin-top: 14px; }
+.tool {
+  -webkit-appearance: none; appearance: none; cursor: pointer;
+  flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 12px;
+  padding: 9px 4px; color: var(--ink); font-size: 10px; font-weight: 600; min-height: 54px;
+}
+.tool svg { width: 20px; height: 20px; color: var(--primary); }
+.tool:active { background: var(--surface-2); }
+.tool.on { border-color: var(--primary); background: var(--primary-tint); }
 
 /* Description sheet */
 .annot-sheet {
