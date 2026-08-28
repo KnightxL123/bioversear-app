@@ -204,6 +204,8 @@ model-viewer {
   border-radius: 10px; padding: 11px 12px;
 }
 .ar-note { margin-top: 10px; font-size: 12px; color: var(--muted); line-height: 1.45; }
+.ar-credit { font-size: 11px; opacity: .85; }
+.ar-credit a { color: var(--primary); }
 
 .spacer-grow { flex: 1; }
 .hidden { display: none !important; }

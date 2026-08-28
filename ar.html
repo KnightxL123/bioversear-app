@@ -184,6 +184,34 @@
         mv.appendChild(btn);
       });
     }
+
+    // Attribution — required by the model's CC-BY license.
+    if (t.credit) {
+      var c = document.createElement('p');
+      c.className = 'ar-note ar-credit';
+      var name = t.credit.url
+        ? '<a href="' + t.credit.url + '" target="_blank" rel="noopener">' + BV.escape(t.credit.title) + '</a>'
+        : BV.escape(t.credit.title);
+      c.innerHTML = '3D model &amp; annotations: ' + name + ' by ' + BV.escape(t.credit.author) +
+                    ' — ' + BV.escape(t.credit.license) + '.';
+      document.querySelector('.app').appendChild(c);
+    }
+
+    // Author mode (ar.html?author=1): tap a part of the model to capture its position +
+    // normal, so real organelle pins can be locked in. Coordinates print to the status
+    // line and the console in ready-to-paste form.
+    if (new URLSearchParams(location.search).get('author') === '1') {
+      status.textContent = 'AUTHOR MODE — tap a part of the model to capture its coordinates.';
+      mv.addEventListener('click', function (ev) {
+        var r = mv.positionAndNormalFromPoint(ev.clientX, ev.clientY);
+        if (!r) { status.textContent = 'AUTHOR: that tap missed the model — tap directly on it.'; return; }
+        var pos = r.position.toString().replace(/m/g, '').trim().replace(/\s+/g, ' ');
+        var nrm = r.normal.toString().replace(/m/g, '').trim().replace(/\s+/g, ' ');
+        var line = "position: '" + pos + "', normal: '" + nrm + "'";
+        status.textContent = 'AUTHOR ✓ ' + line;
+        console.log('[BioVerseAR author]', line);
+      });
+    }
   })();
   </script>
 </body>
