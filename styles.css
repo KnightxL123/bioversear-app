@@ -161,26 +161,29 @@ model-viewer {
 }
 .hotspot.active .hs-dot { transform: scale(1.18); }
 
-/* Description cards */
+/* Description cards — hidden until their number is tapped (one open at a time) */
 .info-card {
-  position: absolute; pointer-events: auto;
-  width: 42%; max-width: 190px; max-height: 40%; overflow-y: auto;
-  background: var(--surface); border: 1px solid var(--line);
-  border-radius: 12px; padding: 9px 11px;
-  box-shadow: 0 4px 14px rgba(4,44,83,.14);
-  text-align: left; font: inherit; cursor: pointer;
-  transition: opacity .15s ease, box-shadow .15s ease, transform .1s ease;
+  position: absolute; display: none;
+  width: 44%; max-width: 200px; max-height: 42%; overflow-y: auto;
+  background: var(--surface);
+  border: 1px solid var(--line); border-radius: 12px; padding: 9px 11px;
+  box-shadow: 0 0 0 2px var(--c, var(--primary)), 0 8px 20px rgba(4,44,83,.2);
+  text-align: left;
 }
-.info-card.dim { opacity: .4; }
-.info-card.active { box-shadow: 0 0 0 2px var(--c, var(--primary)), 0 6px 18px rgba(4,44,83,.2); }
-.info-card:active { transform: scale(0.99); }
+.info-card.open { display: block; }
+.info-card.dim { opacity: .55; }
 .ic-head { display: flex; align-items: center; gap: 7px; margin-bottom: 4px; }
 .ic-num {
   flex: 0 0 auto; width: 18px; height: 18px; border-radius: 50%;
   background: var(--c, var(--primary)); color: #fff;
   font-size: 11px; font-weight: 700; display: grid; place-items: center;
 }
-.ic-title { font-size: 12.5px; font-weight: 700; color: var(--c, var(--primary)); line-height: 1.15; }
+.ic-title { flex: 1; font-size: 12.5px; font-weight: 700; color: var(--c, var(--primary)); line-height: 1.15; }
+.ic-close {
+  -webkit-appearance: none; appearance: none; border: none; background: none;
+  color: var(--muted); font-size: 20px; line-height: 1; cursor: pointer;
+  padding: 0 2px; margin: -2px -2px 0 2px; flex: 0 0 auto;
+}
 .ic-body { font-size: 11px; color: var(--ink-soft); line-height: 1.4; }
 .slot-top   { top: 4px;  left: 50%; transform: translateX(-50%); }
 .slot-right { top: 26%;  right: 4px; }

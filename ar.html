@@ -108,12 +108,20 @@
       mv.setAttribute('camera-target', p[0] + 'm ' + p[1] + 'm ' + p[2] + 'm');
       mv.setAttribute('camera-orbit', theta + 'rad ' + phi + 'rad 0.3m');
     }
-    function focus(i) {
+    // Only one card open at a time; tapping the same number toggles it closed.
+    function open(i) {
+      if (current === i) { close(); return; }
       current = i;
-      cardEls.forEach(function (c, k) { c.classList.toggle('active', k === i); });
-      var dots = mv.querySelectorAll('.hotspot');
-      dots.forEach(function (d) { d.classList.toggle('active', +d.getAttribute('data-index') === i); });
+      cardEls.forEach(function (c, k) { c.classList.toggle('open', k === i); c.classList.toggle('active', k === i); });
+      mv.querySelectorAll('.hotspot').forEach(function (d) { d.classList.toggle('active', +d.getAttribute('data-index') === i); });
       flyTo(annos[i]);
+    }
+    function close() {
+      current = -1;
+      cardEls.forEach(function (c) { c.classList.remove('open', 'active'); });
+      mv.querySelectorAll('.hotspot').forEach(function (d) { d.classList.remove('active'); });
+      mv.setAttribute('camera-target', 'auto auto auto');
+      mv.setAttribute('camera-orbit', '0deg 75deg auto');
     }
 
     if (annos.length) {
@@ -127,19 +135,19 @@
         dot.setAttribute('data-normal', a.normal);
         dot.style.setProperty('--c', color(a));
         dot.innerHTML = '<span class="hs-dot">' + a.id + '</span>';
-        dot.addEventListener('click', function (e) { e.stopPropagation(); focus(i); });
+        dot.addEventListener('click', function (e) { e.stopPropagation(); open(i); });
         mv.appendChild(dot);
 
-        // description card
-        var card = document.createElement('button');
-        card.type = 'button';
+        // description card (hidden until its number is tapped)
+        var card = document.createElement('div');
         card.className = 'info-card slot-' + (SLOT[a.id] || 'top');
         card.style.setProperty('--c', color(a));
         card.innerHTML =
           '<div class="ic-head"><span class="ic-num">' + a.id + '</span>' +
-          '<span class="ic-title">' + BV.escape(a.title) + '</span></div>' +
+          '<span class="ic-title">' + BV.escape(a.title) + '</span>' +
+          '<button class="ic-close" type="button" aria-label="Close">&times;</button></div>' +
           '<div class="ic-body">' + BV.escape(a.body) + '</div>';
-        card.addEventListener('click', function () { focus(i); });
+        card.querySelector('.ic-close').addEventListener('click', function (e) { e.stopPropagation(); close(); });
         cardsHost.appendChild(card);
         cardEls.push(card);
 
@@ -151,28 +159,30 @@
     }
 
     // Continuously redraw leader lines from each card to its (moving) dot.
+    // Only the open card's leader line is drawn (one card at a time).
     function tick() {
       var sr = stage.getBoundingClientRect();
       for (var i = 0; i < annos.length; i++) {
+        var line = lineEls[i];
+        if (i !== current) { line.style.opacity = 0; continue; }
         var dot = mv.querySelector('.hotspot[data-index="' + i + '"]');
-        var card = cardEls[i], line = lineEls[i];
-        if (!dot || !card || !line) continue;
+        var card = cardEls[i];
+        if (!dot || !card) { line.style.opacity = 0; continue; }
         var dr = dot.getBoundingClientRect(), cr = card.getBoundingClientRect();
         line.setAttribute('x1', dr.left + dr.width / 2 - sr.left);
         line.setAttribute('y1', dr.top + dr.height / 2 - sr.top);
         line.setAttribute('x2', cr.left + cr.width / 2 - sr.left);
         line.setAttribute('y2', cr.top + cr.height / 2 - sr.top);
-        var occluded = parseFloat(getComputedStyle(dot).opacity) < 0.5;
-        card.classList.toggle('dim', occluded);
-        line.style.opacity = occluded ? 0.12 : (card.classList.contains('active') ? 0.85 : 0.45);
+        line.style.opacity = 0.85;
       }
       requestAnimationFrame(tick);
     }
     requestAnimationFrame(tick);
 
-    // Guided tour
+    // Guided tour — reveals one card at a time, stepping through in order
     document.getElementById('tour-btn').addEventListener('click', function () {
-      focus(annos.length ? (current + 1) % annos.length : -1);
+      if (!annos.length) return;
+      open(current < 0 ? 0 : (current + 1) % annos.length);
     });
 
     // Toolbar (uses the attribute API — the property setters don't take effect here)
@@ -192,14 +202,7 @@
       else if (act === 'pan') { b.classList.toggle('on'); status.textContent = 'Tip: drag with two fingers to pan the model.'; }
       else if (act === 'zoomin') setRadius(0.72);
       else if (act === 'zoomout') setRadius(1.4);
-      else if (act === 'reset') {
-        mv.removeAttribute('auto-rotate');
-        mv.setAttribute('camera-target', 'auto auto auto');
-        mv.setAttribute('camera-orbit', '0deg 75deg auto');
-        current = -1;
-        cardEls.forEach(function (c) { c.classList.remove('active'); });
-        mv.querySelectorAll('.hotspot').forEach(function (d) { d.classList.remove('active'); });
-      }
+      else if (act === 'reset') { mv.removeAttribute('auto-rotate'); close(); }
     });
 
     // Attribution (CC-BY)
