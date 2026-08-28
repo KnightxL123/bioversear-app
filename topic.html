@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#185FA5">
+  <title>BioVerseAR — Topic</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app">
+    <div class="ar-head">
+      <a class="iconbtn" href="dashboard.html" aria-label="Back to topics">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </a>
+      <div class="title" id="topic-name">Topic</div>
+    </div>
+
+    <div class="badge-card" id="badge-card">
+      <div class="badge-medal" id="badge-medal">
+        <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="9" r="5.2" stroke="currentColor" stroke-width="1.6"/><path d="M9 13.5L7.5 21l4.5-2.6L16.5 21 15 13.5" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+      </div>
+      <div class="badge-info">
+        <div class="badge-name" id="badge-name">Badge</div>
+        <div class="badge-state" id="badge-state">Locked — complete the post-test to earn it</div>
+      </div>
+    </div>
+
+    <h2 class="section-title">Learn</h2>
+    <a class="action" href="#" id="ar-link">
+      <span class="action-ic"><svg viewBox="0 0 24 24" fill="none"><path d="M12 2.8l7.5 4.3v9.8L12 21.2 4.5 16.9V7.1L12 2.8z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M12 2.8v18.4M4.5 7.1L12 11.4l7.5-4.3" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg></span>
+      <span class="action-body"><span class="action-title">Explore in AR</span><span class="action-sub">View the 3D model &amp; annotations</span></span>
+      <span class="action-go">›</span>
+    </a>
+
+    <h2 class="section-title">Assessment</h2>
+    <a class="action" href="#" id="pre-link">
+      <span class="action-ic pre"><svg viewBox="0 0 24 24" fill="none"><path d="M9 11l3 3 6-6M4 6h7M4 12h4M4 18h10" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      <span class="action-body"><span class="action-title">Pre-test</span><span class="action-sub" id="pre-sub">Take before exploring</span></span>
+      <span class="action-go" id="pre-score"></span>
+    </a>
+    <a class="action" href="#" id="post-link">
+      <span class="action-ic post"><svg viewBox="0 0 24 24" fill="none"><path d="M9 11l3 3 6-6M4 6h7M4 12h4M4 18h10" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      <span class="action-body"><span class="action-title">Post-test</span><span class="action-sub" id="post-sub">Take after exploring</span></span>
+      <span class="action-go" id="post-score"></span>
+    </a>
+
+    <div class="gain" id="gain" hidden></div>
+
+    <div class="spacer-grow"></div>
+  </div>
+
+  <script src="topics.js"></script>
+  <script src="questions.js"></script>
+  <script src="app.js"></script>
+  <script>
+  (function () {
+    'use strict';
+    var profile = BV.requireAuth(); if (!profile) return;
+    var t = BV.topic(new URLSearchParams(location.search).get('topic'));
+    if (!t || !t.ready) { location.replace('dashboard.html'); return; }
+    document.title = 'BioVerseAR — ' + t.name;
+    document.getElementById('topic-name').textContent = t.name;
+
+    // badge
+    document.getElementById('badge-name').textContent = t.badge;
+    var earned = BV.hasBadge(t.id);
+    var card = document.getElementById('badge-card');
+    card.classList.toggle('earned', earned);
+    document.getElementById('badge-state').textContent = earned
+      ? 'Earned — nice work!' : 'Locked — complete the post-test to earn it';
+
+    document.getElementById('ar-link').href = 'ar.html?topic=' + encodeURIComponent(t.id);
+    document.getElementById('pre-link').href = 'quiz.html?topic=' + encodeURIComponent(t.id) + '&mode=pre';
+    document.getElementById('post-link').href = 'quiz.html?topic=' + encodeURIComponent(t.id) + '&mode=post';
+
+    var a = BV.getAttempts(t.id);
+    function scoreLabel(el, sub, at) {
+      if (at && typeof at.score === 'number') {
+        document.getElementById(el).textContent = at.score + ' pts';
+        document.getElementById(sub).textContent = at.correct + '/' + at.total + ' correct · retake anytime';
+      }
+    }
+    scoreLabel('pre-score', 'pre-sub', a.pre);
+    scoreLabel('post-score', 'post-sub', a.post);
+
+    if (a.pre && a.post) {
+      var gain = a.post.score - a.pre.score;
+      var g = document.getElementById('gain');
+      g.hidden = false;
+      g.textContent = 'Learning gain: ' + (gain >= 0 ? '+' : '') + gain + ' pts (post − pre)';
+    }
+  })();
+  </script>
+</body>
+</html>

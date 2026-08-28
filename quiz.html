@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#185FA5">
+  <title>BioVerseAR — Quiz</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app quiz-app">
+    <div class="ar-head">
+      <a class="iconbtn" id="exit" href="#" aria-label="Exit quiz">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </a>
+      <div class="title" id="quiz-title">Quiz</div>
+      <div style="flex:1"></div>
+      <div class="score-chip" id="score-chip" hidden>0 pts</div>
+    </div>
+
+    <!-- START -->
+    <section id="start" class="card quiz-card">
+      <div class="quiz-mode" id="start-mode">Pre-test</div>
+      <h1 class="quiz-h" id="start-topic">Topic</h1>
+      <p class="quiz-p" id="start-desc">Kahoot-style multiple choice. No penalty for wrong answers.</p>
+      <button class="btn" id="start-btn" type="button">Start</button>
+    </section>
+
+    <!-- QUESTION -->
+    <section id="game" hidden>
+      <div class="q-progress"><div class="q-progress-bar" id="q-bar"></div></div>
+      <div class="q-meta">
+        <span id="q-count">Question 1 of 5</span>
+        <span class="q-diff" id="q-diff">Easy · 5 pts</span>
+      </div>
+      <div class="q-text" id="q-text">?</div>
+      <div class="q-options" id="q-options"></div>
+      <div class="q-feedback" id="q-feedback" hidden></div>
+      <button class="btn" id="next-btn" type="button" hidden>Next</button>
+    </section>
+
+    <!-- RESULT -->
+    <section id="result" class="card quiz-card" hidden>
+      <div class="result-ring" id="result-ring"><span id="result-score">0</span><small>pts</small></div>
+      <h1 class="quiz-h" id="result-h">Nice work!</h1>
+      <p class="quiz-p" id="result-sub">You answered 0 of 0 correctly.</p>
+      <div class="badge-earned" id="badge-earned" hidden></div>
+      <button class="btn" id="done-btn" type="button">Back to topic</button>
+      <button class="btn secondary" id="retake-btn" type="button">Retake</button>
+    </section>
+  </div>
+
+  <script src="topics.js"></script>
+  <script src="questions.js"></script>
+  <script src="app.js"></script>
+  <script>
+  (function () {
+    'use strict';
+    var profile = BV.requireAuth(); if (!profile) return;
+
+    var params = new URLSearchParams(location.search);
+    var t = BV.topic(params.get('topic'));
+    var mode = params.get('mode') === 'post' ? 'post' : 'pre';
+    var quiz = t && window.QUIZZES && window.QUIZZES[t.id];
+    if (!t || !t.ready || !quiz || !quiz.questions.length) { location.replace('dashboard.html'); return; }
+
+    var Q = quiz.questions, P = window.QUIZ_POINTS, WF = window.QUIZ_WRONG_FEEDBACK;
+    var idx = 0, score = 0, correctCount = 0, answers = [], shownAt = 0;
+    var modeLabel = mode === 'post' ? 'Post-test' : 'Pre-test';
+
+    var $ = function (id) { return document.getElementById(id); };
+    document.getElementById('exit').href = 'topic.html?topic=' + encodeURIComponent(t.id);
+    $('quiz-title').textContent = t.name;
+    $('start-mode').textContent = modeLabel;
+    $('start-topic').textContent = t.name;
+    $('start-desc').textContent = Q.length + ' questions · Kahoot-style · no penalty for wrong answers.';
+
+    $('start-btn').addEventListener('click', function () {
+      $('start').hidden = true; $('game').hidden = false; $('score-chip').hidden = false;
+      renderQuestion();
+    });
+
+    function renderQuestion() {
+      var q = Q[idx];
+      $('q-bar').style.width = ((idx) / Q.length * 100) + '%';
+      $('q-count').textContent = 'Question ' + (idx + 1) + ' of ' + Q.length;
+      var pts = P[q.difficulty] || 0;
+      $('q-diff').textContent = q.difficulty.charAt(0).toUpperCase() + q.difficulty.slice(1) + ' · ' + pts + ' pts';
+      $('q-text').textContent = q.q;
+      $('q-feedback').hidden = true; $('q-feedback').className = 'q-feedback';
+      $('next-btn').hidden = true;
+
+      var host = $('q-options'); host.innerHTML = '';
+      q.options.forEach(function (opt, i) {
+        var b = document.createElement('button');
+        b.type = 'button'; b.className = 'q-opt';
+        b.innerHTML = '<span class="q-letter">' + 'ABCD'[i] + '</span><span>' + BV.escape(opt) + '</span>';
+        b.addEventListener('click', function () { choose(i); });
+        host.appendChild(b);
+      });
+      shownAt = new Date().getTime();
+    }
+
+    function choose(chosen) {
+      var q = Q[idx];
+      var ms = new Date().getTime() - shownAt;
+      var opts = $('q-options').querySelectorAll('.q-opt');
+      opts.forEach(function (b, i) {
+        b.disabled = true;
+        if (i === q.correct) b.classList.add('correct');
+        if (i === chosen && chosen !== q.correct) b.classList.add('wrong');
+      });
+      var right = chosen === q.correct;
+      var pts = P[q.difficulty] || 0;
+      if (right) { score += pts; correctCount++; }
+      answers.push({ qId: q.id, chosen: chosen, correct: right, ms: ms });
+
+      $('score-chip').textContent = score + ' pts';
+      var fb = $('q-feedback'); fb.hidden = false;
+      if (right) { fb.classList.add('ok'); fb.textContent = 'Correct!  +' + pts + ' pts'; }
+      else {
+        fb.classList.add('bad');
+        var phrase = WF[idx % WF.length];
+        fb.textContent = phrase + ' — correct answer highlighted.';
+      }
+      $('next-btn').hidden = false;
+      $('next-btn').textContent = (idx === Q.length - 1) ? 'See results' : 'Next';
+    }
+
+    $('next-btn').addEventListener('click', function () {
+      idx++;
+      if (idx < Q.length) renderQuestion(); else finish();
+    });
+
+    function finish() {
+      var maxPts = Q.reduce(function (s, q) { return s + (P[q.difficulty] || 0); }, 0);
+      var attempt = { mode: mode, score: score, max: maxPts, correct: correctCount, total: Q.length,
+                      answers: answers, at: new Date().toISOString() };
+      BV.saveAttempt(t.id, mode, attempt);
+
+      var newlyEarned = false;
+      if (mode === 'post' && !BV.hasBadge(t.id)) { BV.awardBadge(t.id); newlyEarned = true; }
+
+      $('game').hidden = true; $('result').hidden = false; $('score-chip').hidden = true;
+      $('result-score').textContent = score;
+      $('result-sub').textContent = 'You answered ' + correctCount + ' of ' + Q.length + ' correctly (' + score + ' / ' + maxPts + ' pts).';
+      if (newlyEarned || BV.hasBadge(t.id)) {
+        var be = $('badge-earned'); be.hidden = false;
+        be.innerHTML = (newlyEarned ? '🏅 Badge earned: ' : '🏅 Badge: ') + '<strong>' + BV.escape(t.badge) + '</strong>';
+      }
+    }
+
+    $('done-btn').addEventListener('click', function () { location.href = 'topic.html?topic=' + encodeURIComponent(t.id); });
+    $('retake-btn').addEventListener('click', function () {
+      idx = 0; score = 0; correctCount = 0; answers = [];
+      $('result').hidden = true; $('game').hidden = false; $('score-chip').hidden = false;
+      $('score-chip').textContent = '0 pts';
+      renderQuestion();
+    });
+  })();
+  </script>
+</body>
+</html>
