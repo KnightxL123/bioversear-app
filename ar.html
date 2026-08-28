@@ -189,9 +189,9 @@
         btn.style.setProperty('--len', Math.hypot(dx, dy) + 'px');
         btn.style.setProperty('--ang', Math.atan2(dy, dx) + 'rad');
         btn.innerHTML =
-          '<span class="leader"></span>' +
-          '<span class="dot">' + a.id + '</span>' +
-          '<span class="pill">' + BV.escape(a.title) + '</span>';
+          '<span class="hs-leader"></span>' +
+          '<span class="hs-dot">' + a.id + '</span>' +
+          '<span class="hs-pill">' + BV.escape(a.title) + '</span>';
         btn.addEventListener('click', function (ev) { ev.stopPropagation(); show(i); });
         mv.appendChild(btn);
       });

@@ -145,7 +145,7 @@ model-viewer {
   -webkit-appearance: none; appearance: none;
   border: none; background: none; padding: 0; margin: 0; cursor: pointer;
 }
-.hotspot .dot {
+.hotspot .hs-dot {
   position: absolute; left: 0; top: 0; transform: translate(-50%, -50%);
   display: grid; place-items: center;
   width: 20px; height: 20px; border-radius: 50%;
@@ -154,14 +154,14 @@ model-viewer {
   border: 2px solid #fff; box-shadow: 0 1px 4px rgba(4,44,83,.4);
   z-index: 3; transition: background .1s ease, transform .1s ease;
 }
-.hotspot .leader {
+.hotspot .hs-leader {
   position: absolute; left: 0; top: 0;
   height: 2px; width: var(--len);
   background: var(--ink); opacity: .5;
   transform-origin: 0 50%; transform: rotate(var(--ang));
   z-index: 1;
 }
-.hotspot .pill {
+.hotspot .hs-pill {
   position: absolute; left: 0; top: 0;
   transform: translate(var(--dx), var(--dy)) translate(-50%, -50%);
   background: var(--ink); color: #fff;
@@ -172,10 +172,10 @@ model-viewer {
   box-shadow: 0 2px 6px rgba(4,44,83,.32);
   z-index: 2; transition: background .1s ease;
 }
-.hotspot:active .dot { transform: translate(-50%, -50%) scale(0.9); }
-.hotspot.active .dot  { background: var(--accent); }
-.hotspot.active .pill { background: var(--primary); }
-.hotspot.active .leader { opacity: .8; background: var(--primary); }
+.hotspot:active .hs-dot { transform: translate(-50%, -50%) scale(0.9); }
+.hotspot.active .hs-dot  { background: var(--accent); }
+.hotspot.active .hs-pill { background: var(--primary); }
+.hotspot.active .hs-leader { opacity: .8; background: var(--primary); }
 
 /* Description sheet */
 .annot-sheet {
