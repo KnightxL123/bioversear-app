@@ -166,11 +166,10 @@
         </div>
 
         <div class="field">
-          <label for="classCode">Class code <span class="hint">— from your teacher</span></label>
+          <label for="classCode">Class code <span class="hint">— from your teacher; just labels this device</span></label>
           <input id="classCode" name="classCode" type="text" inputmode="text"
-                 autocomplete="off" autocapitalize="characters" autocorrect="off" spellcheck="false"
-                 maxlength="12" placeholder="e.g. BIO7A" aria-describedby="code-error"
-                 style="text-transform:uppercase">
+                 autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false"
+                 maxlength="40" placeholder="e.g. BIO7A" aria-describedby="code-error">
           <div class="error" id="code-error" role="alert"></div>
         </div>
 
@@ -237,9 +236,12 @@
       return null;
     }
     function validateCode(v) {
-      v = (v || '').trim().toUpperCase();
+      // The class code is only an on-device LABEL here (no server to verify it),
+      // so we require that something was entered but impose NO format rules that
+      // would reject whatever the teacher actually chose (e.g. "BIO7A", "Period 3").
+      v = (v || '').trim();
       if (!v) return 'Please enter your class code.';
-      if (!/^[A-Z0-9]{3,12}$/.test(v)) return 'Codes are 3–12 letters/numbers.';
+      if (v.length > 40) return 'That is too long (max 40 characters).';
       return null;
     }
 
@@ -293,9 +295,8 @@
       }
       var profile = {
         alias: aliasRaw.trim(),
-        classCode: codeRaw.trim().toUpperCase(),
-        createdAt: new Date().toISOString(),
-        device: true
+        classCode: codeRaw.trim().replace(/\s+/g, ' '), // stored verbatim as a label (whitespace tidied)
+        createdAt: new Date().toISOString()
       };
       if (!Store.save(profile)) {
         showError('alias', 'alias-error', 'Could not save on this device. Check browser storage settings.');
