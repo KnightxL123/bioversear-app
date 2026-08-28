@@ -105,8 +105,8 @@
       var p = parseVec(a.position), n = parseVec(a.normal);
       var theta = Math.atan2(n[0], n[2]);
       var phi = Math.acos(Math.max(-1, Math.min(1, n[1])));
-      mv.cameraTarget = p[0] + 'm ' + p[1] + 'm ' + p[2] + 'm';
-      mv.cameraOrbit = theta + 'rad ' + phi + 'rad 0.34m';
+      mv.setAttribute('camera-target', p[0] + 'm ' + p[1] + 'm ' + p[2] + 'm');
+      mv.setAttribute('camera-orbit', theta + 'rad ' + phi + 'rad 0.3m');
     }
     function focus(i) {
       current = i;
@@ -175,20 +175,31 @@
       focus(annos.length ? (current + 1) % annos.length : -1);
     });
 
-    // Toolbar
-    function orbit() { var o = mv.getCameraOrbit(); return o; }
+    // Toolbar (uses the attribute API — the property setters don't take effect here)
     function setRadius(mult) {
-      var o = orbit();
-      mv.cameraOrbit = o.theta + 'rad ' + o.phi + 'rad ' + (o.radius * mult) + 'm';
+      var o = mv.getCameraOrbit();
+      var r = Math.max(0.12, Math.min(1.6, o.radius * mult));
+      mv.setAttribute('camera-orbit', o.theta + 'rad ' + o.phi + 'rad ' + r + 'm');
     }
     document.getElementById('toolbar').addEventListener('click', function (e) {
       var b = e.target.closest('.tool'); if (!b) return;
       var act = b.getAttribute('data-act');
-      if (act === 'rotate') { mv.autoRotate = !mv.autoRotate; b.classList.toggle('on', mv.autoRotate); }
-      else if (act === 'pan') { b.classList.toggle('on'); status.textContent = 'Tip: drag with two fingers to pan.'; }
-      else if (act === 'zoomin') setRadius(0.8);
-      else if (act === 'zoomout') setRadius(1.25);
-      else if (act === 'reset') { mv.autoRotate = false; mv.cameraTarget = 'auto auto auto'; mv.cameraOrbit = '0deg 75deg auto'; if (mv.jumpCameraToGoal) mv.jumpCameraToGoal(); current = -1; cardEls.forEach(function (c) { c.classList.remove('active'); }); }
+      if (act === 'rotate') {
+        var on = !mv.hasAttribute('auto-rotate');
+        if (on) mv.setAttribute('auto-rotate', ''); else mv.removeAttribute('auto-rotate');
+        b.classList.toggle('on', on);
+      }
+      else if (act === 'pan') { b.classList.toggle('on'); status.textContent = 'Tip: drag with two fingers to pan the model.'; }
+      else if (act === 'zoomin') setRadius(0.72);
+      else if (act === 'zoomout') setRadius(1.4);
+      else if (act === 'reset') {
+        mv.removeAttribute('auto-rotate');
+        mv.setAttribute('camera-target', 'auto auto auto');
+        mv.setAttribute('camera-orbit', '0deg 75deg auto');
+        current = -1;
+        cardEls.forEach(function (c) { c.classList.remove('active'); });
+        mv.querySelectorAll('.hotspot').forEach(function (d) { d.classList.remove('active'); });
+      }
     });
 
     // Attribution (CC-BY)
