@@ -1,0 +1,10 @@
+{
+  "name": "BioVerseAR",
+  "short_name": "BioVerseAR",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F4F8FC",
+  "theme_color": "#185FA5"
+}

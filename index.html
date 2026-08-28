@@ -302,7 +302,8 @@
         showError('alias', 'alias-error', 'Could not save on this device. Check browser storage settings.');
         return;
       }
-      renderWelcome(profile);
+      // First sign-up → straight into the topic dashboard.
+      location.href = 'dashboard.html';
     });
 
     // Clear a field's error as the user edits it
@@ -321,9 +322,7 @@
     });
 
     $('continue-btn').addEventListener('click', function () {
-      // Hand-off point to the AR experience. Wire this to your app's next screen.
-      // e.g. location.href = 'ar.html';
-      alert('Signed in. (Hook "Continue" up to the AR screen next.)');
+      location.href = 'dashboard.html';
     });
 
     // ---- Boot: pick the view based on what's already on this device ----

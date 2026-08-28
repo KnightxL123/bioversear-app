@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#185FA5">
+  <title>BioVerseAR — Topics</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="logo" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#fff" stroke-width="1.6"/><path d="M3.5 12h17M12 3.2c2.6 2.4 2.6 15.2 0 17.6M12 3.2c-2.6 2.4-2.6 15.2 0 17.6" stroke="#fff" stroke-width="1.4"/></svg>
+      </div>
+      <div class="who">
+        <div class="hi">Hi, <span id="hi-alias">student</span></div>
+        <div class="cls">Class <span id="hi-class">—</span></div>
+      </div>
+      <div class="spacer"></div>
+      <button class="iconbtn" id="signout" type="button" aria-label="Switch student / sign out" title="Switch student / sign out">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M15 12H4m0 0l3.5-3.5M4 12l3.5 3.5M14 5h4a2 2 0 012 2v10a2 2 0 01-2 2h-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </header>
+
+    <h1 class="page-h">Choose a topic</h1>
+    <p class="section-title" style="text-transform:none;letter-spacing:0;font-weight:400;color:var(--muted);font-size:13px;margin-top:0;">
+      Explore the 3D model in AR, then take the quiz to earn its badge.
+    </p>
+
+    <div class="topics" id="topics" role="list"></div>
+
+    <div class="spacer-grow"></div>
+  </div>
+
+  <script src="topics.js"></script>
+  <script src="app.js"></script>
+  <script>
+  (function () {
+    'use strict';
+    var profile = BV.requireAuth();
+    if (!profile) return;
+
+    document.getElementById('hi-alias').textContent = profile.alias;
+    document.getElementById('hi-class').textContent = profile.classCode || '—';
+    document.getElementById('signout').addEventListener('click', function () {
+      if (confirm('Sign out on this device? Your alias and class code will be removed from this phone.')) BV.signOut();
+    });
+
+    var ICON = {
+      cube: '<svg viewBox="0 0 24 24" fill="none"><path d="M12 2.8l7.5 4.3v9.8L12 21.2 4.5 16.9V7.1L12 2.8z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M12 2.8v18.4M4.5 7.1L12 11.4l7.5-4.3" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>',
+      lock: '<svg viewBox="0 0 24 24" fill="none"><rect x="5" y="10.5" width="14" height="9.5" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M8 10.5V8a4 4 0 018 0v2.5" stroke="currentColor" stroke-width="1.6"/></svg>',
+      medal: '<svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="9" r="5.2" stroke="currentColor" stroke-width="1.5"/><path d="M9 13.5L7.5 21l4.5-2.6L16.5 21 15 13.5" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>',
+      chevron: '<svg viewBox="0 0 24 24" fill="none"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+    };
+
+    var host = document.getElementById('topics');
+    (window.TOPICS || []).forEach(function (t) {
+      var badgeRow = '<div class="badge">' + ICON.medal + '<span>' + BV.escape(t.badge) + '</span></div>';
+      var el;
+      if (t.ready && t.model) {
+        el = document.createElement('a');
+        el.className = 'topic';
+        el.setAttribute('role', 'listitem');
+        el.href = 'ar.html?topic=' + encodeURIComponent(t.id);
+        el.innerHTML =
+          '<div class="thumb">' + ICON.cube + '</div>' +
+          '<div class="body"><div class="name">' + BV.escape(t.name) + '</div>' + badgeRow + '</div>' +
+          '<div class="go">' + ICON.chevron + '</div>';
+      } else {
+        el = document.createElement('div');
+        el.className = 'topic locked';
+        el.setAttribute('role', 'listitem');
+        el.setAttribute('aria-disabled', 'true');
+        el.innerHTML =
+          '<div class="thumb">' + ICON.lock + '</div>' +
+          '<div class="body"><div class="name">' + BV.escape(t.name) + '</div>' + badgeRow + '</div>' +
+          '<div class="go"><span class="pill">' + ICON.lock + 'Coming soon</span></div>';
+      }
+      host.appendChild(el);
+    });
+  })();
+  </script>
+</body>
+</html>
