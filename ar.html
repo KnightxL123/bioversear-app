@@ -95,8 +95,11 @@
 
     var mv = document.getElementById('mv');
     var status = document.getElementById('status');
+    // ?labeled=1 loads the prototype model with baked-in floating name labels (visible
+    // in AR too), and hides the HTML dots so the baked labels are what you see.
+    var labeled = new URLSearchParams(location.search).get('labeled') === '1';
     mv.setAttribute('alt', t.name + ' 3D model');
-    mv.src = t.model;
+    mv.src = labeled ? t.model.replace(/\.glb$/, '_labeled.glb') : t.model;
 
     mv.addEventListener('load', function () {
       status.textContent = 'Model ready. Rotate/zoom it here, or tap “View in AR”.';
@@ -167,7 +170,7 @@
     });
     document.getElementById('tour-btn').addEventListener('click', function () { show(0); });
 
-    if (annos.length) {
+    if (annos.length && !labeled) {
       document.getElementById('hotspot-hint').hidden = false;
       document.getElementById('ar-toolbar').hidden = false;
       annos.forEach(function (a, i) {
