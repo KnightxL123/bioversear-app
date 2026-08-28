@@ -179,7 +179,19 @@ model-viewer {
   color: var(--muted); width: 34px; height: 34px; border-radius: 9px; font-size: 22px;
   line-height: 1; cursor: pointer; flex: 0 0 auto;
 }
-.annot-body { margin: 10px 2px 2px; font-size: 14px; color: var(--ink-soft); line-height: 1.5; }
+.annot-body { margin: 10px 2px 12px; font-size: 14px; color: var(--ink-soft); line-height: 1.5; }
+.annot-foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; border-top: 1px solid var(--line); padding-top: 10px; }
+.annot-nav {
+  -webkit-appearance: none; appearance: none; border: 1.5px solid var(--line);
+  background: var(--surface); color: var(--primary); font-weight: 600; font-size: 14px;
+  border-radius: 9px; padding: 9px 12px; min-height: 40px; cursor: pointer;
+}
+.annot-nav:active { background: var(--primary-tint); }
+.annot-count { font-size: 13px; color: var(--muted); font-weight: 600; }
+
+/* Tour toolbar (above the status line) */
+.ar-toolbar { margin-top: 12px; }
+.tour-btn { width: auto; display: inline-flex; min-height: 44px; padding: 10px 16px; }
 .ar-btn {
   position: absolute; bottom: 14px; right: 14px;
   background: var(--primary); color: #fff; border: none; border-radius: 10px;
