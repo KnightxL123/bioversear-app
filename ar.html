@@ -202,8 +202,13 @@
     // line and the console in ready-to-paste form.
     if (new URLSearchParams(location.search).get('author') === '1') {
       status.textContent = 'AUTHOR MODE — tap a part of the model to capture its coordinates.';
-      mv.addEventListener('click', function (ev) {
-        var r = mv.positionAndNormalFromPoint(ev.clientX, ev.clientY);
+      // Use pointer down/up with a movement threshold so a TAP registers but a
+      // camera drag/rotate does not (fixes touch on Android where 'click' is flaky).
+      var dx = 0, dy = 0;
+      mv.addEventListener('pointerdown', function (e) { dx = e.clientX; dy = e.clientY; });
+      mv.addEventListener('pointerup', function (e) {
+        if (Math.hypot(e.clientX - dx, e.clientY - dy) > 8) return; // was a drag
+        var r = mv.positionAndNormalFromPoint(e.clientX, e.clientY);
         if (!r) { status.textContent = 'AUTHOR: that tap missed the model — tap directly on it.'; return; }
         var pos = r.position.toString().replace(/m/g, '').trim().replace(/\s+/g, ' ');
         var nrm = r.normal.toString().replace(/m/g, '').trim().replace(/\s+/g, ' ');
