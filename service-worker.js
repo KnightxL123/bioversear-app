@@ -3,7 +3,7 @@
 // Cells model so the whole app (and its in-page 3D render) works with no network.
 // NOTE: the Scene Viewer AR handoff is a separate Android app and does NOT read this
 // cache; it caches the model itself after the topic is opened online once.
-const CACHE_NAME = 'bioversear-app-v11';
+const CACHE_NAME = 'bioversear-app-v12';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -63,9 +63,10 @@ self.addEventListener('fetch', function (event) {
     return;
   }
 
-  // network-first for the app shell (HTML/CSS/JS/manifest)
+  // network-first for the app shell (HTML/CSS/JS/manifest); {cache:'no-cache'} forces
+  // revalidation so GitHub Pages' max-age can't serve a stale file within its window.
   event.respondWith(
-    fetch(event.request).then(function (resp) {
+    fetch(event.request, { cache: 'no-cache' }).then(function (resp) {
       var copy = resp.clone();
       caches.open(CACHE_NAME).then(function (c) { c.put(event.request, copy); });
       return resp;
