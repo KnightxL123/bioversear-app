@@ -10,8 +10,8 @@ window.TOPICS = [
     phase: 1,
     ready: true,
     model: 'assets/models/animal_cell.glb'
-    // NOTE: currently a small stand-in .glb. Replace this file with the optimized
-    // ~796KB Draco-compressed animal_cell.glb. Decoders are vendored, so it renders offline.
+    // Real optimized asset: 795,812 bytes, Draco-required (KHR_draco_mesh_compression)
+    // + WebP textures. Draco decoder is vendored locally, so it renders with no network.
   },
   { id: 'human-cells',  name: 'Human Cells',            badge: 'DNA Decycler',    phase: 2, ready: false, model: null },
   { id: 'life-sciences',name: 'Life Sciences',          badge: 'Eco-Explorer',    phase: 2, ready: false, model: null },
