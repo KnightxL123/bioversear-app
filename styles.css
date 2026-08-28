@@ -137,7 +137,49 @@ model-viewer {
   width: 100%; height: 62dvh; min-height: 360px;
   background: #fff; border: 1px solid var(--line); border-radius: var(--radius-lg);
   --poster-color: #fff;
+  --min-hotspot-opacity: 0.18; /* fade markers on the far side of the model */
 }
+
+/* Hotspot markers pinned to the model surface */
+.hotspot {
+  -webkit-appearance: none; appearance: none;
+  border: none; background: none; padding: 0; cursor: pointer;
+  width: 28px; height: 28px;
+}
+.hotspot .dot {
+  display: grid; place-items: center;
+  width: 28px; height: 28px; border-radius: 50%;
+  background: var(--primary); color: #fff;
+  font-size: 13px; font-weight: 700; line-height: 1;
+  border: 2px solid #fff;
+  box-shadow: 0 2px 6px rgba(4,44,83,.35);
+  transition: transform .1s ease, background .1s ease;
+}
+.hotspot:active .dot { transform: scale(0.92); }
+.hotspot.active .dot { background: var(--accent); transform: scale(1.12); }
+
+/* Description sheet */
+.annot-sheet {
+  position: sticky; bottom: 0;
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: var(--radius-lg) var(--radius-lg) var(--radius) var(--radius);
+  box-shadow: var(--shadow);
+  padding: 14px 14px calc(14px + env(safe-area-inset-bottom));
+  margin-top: 12px;
+}
+.annot-head { display: flex; align-items: center; gap: 10px; }
+.annot-num {
+  width: 26px; height: 26px; flex: 0 0 auto; border-radius: 50%;
+  background: var(--accent); color: #fff; font-weight: 700; font-size: 13px;
+  display: grid; place-items: center;
+}
+.annot-title { font-size: 16px; margin: 0; flex: 1; }
+.annot-close {
+  -webkit-appearance: none; appearance: none; border: none; background: var(--surface-2);
+  color: var(--muted); width: 34px; height: 34px; border-radius: 9px; font-size: 22px;
+  line-height: 1; cursor: pointer; flex: 0 0 auto;
+}
+.annot-body { margin: 10px 2px 2px; font-size: 14px; color: var(--ink-soft); line-height: 1.5; }
 .ar-btn {
   position: absolute; bottom: 14px; right: 14px;
   background: var(--primary); color: #fff; border: none; border-radius: 10px;
