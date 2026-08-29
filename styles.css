@@ -89,6 +89,44 @@ body {
    before an answer is chosen, letting a question be skipped) */
 .btn[hidden] { display: none !important; }
 
+/* ---- Leaderboard ---- */
+.lb-scope { font-size: 13px; color: var(--muted); margin: 0 2px 16px; }
+.lb-me {
+  display: flex; align-items: center; gap: 14px;
+  background: var(--primary); color: #fff; border-radius: var(--radius-lg);
+  padding: 16px; box-shadow: var(--shadow); margin-bottom: 16px;
+}
+.lb-me-rank { font-size: 26px; font-weight: 800; flex: 0 0 auto; min-width: 40px; }
+.lb-me-body { flex: 1; min-width: 0; }
+.lb-me-name { font-size: 16px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lb-me-sub { font-size: 12.5px; opacity: .88; margin-top: 2px; }
+.lb-me-medal { flex: 0 0 auto; opacity: .9; }
+.lb-me-medal svg { width: 30px; height: 30px; }
+
+.lb-list { display: flex; flex-direction: column; gap: 8px; }
+.lb-row {
+  display: flex; align-items: center; gap: 12px;
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: var(--radius); padding: 11px 14px; box-shadow: var(--shadow);
+}
+.lb-row.me { border-color: var(--primary); background: var(--primary-tint); }
+.lb-rank {
+  width: 30px; height: 30px; flex: 0 0 auto; border-radius: 50%;
+  display: grid; place-items: center; font-weight: 800; font-size: 14px;
+  background: var(--surface-2); color: var(--ink-soft);
+}
+.lb-rank.rank-1 { background: var(--accent); color: #fff; }
+.lb-rank.rank-2 { background: #AEB9C6; color: #fff; }
+.lb-rank.rank-3 { background: #BE8B5B; color: #fff; }
+.lb-name { flex: 1; min-width: 0; font-weight: 700; font-size: 15px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lb-you { font-size: 11px; font-weight: 700; color: var(--primary); background: #fff; border: 1px solid var(--primary); padding: 1px 7px; border-radius: 999px; margin-left: 7px; }
+.lb-stats { display: flex; align-items: center; gap: 12px; flex: 0 0 auto; }
+.lb-badges { display: inline-flex; align-items: center; gap: 4px; color: var(--accent); font-weight: 700; font-size: 13px; }
+.lb-badges svg { width: 15px; height: 15px; }
+.lb-pts { font-weight: 800; color: var(--ink); font-size: 15px; }
+.lb-pts small { font-weight: 600; color: var(--muted); font-size: 11px; }
+.lb-empty { text-align: center; color: var(--muted); font-size: 13px; padding: 26px 12px; background: var(--surface-2); border-radius: var(--radius); }
+
 /* ---- Topic grid ---- */
 .topics { display: grid; grid-template-columns: 1fr; gap: 12px; }
 
