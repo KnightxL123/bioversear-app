@@ -71,7 +71,19 @@
     document.getElementById('badge-state').textContent = earned
       ? 'Earned — nice work!' : 'Locked — complete the post-test to earn it';
 
-    document.getElementById('ar-link').href = 'ar.html?topic=' + encodeURIComponent(t.id);
+    // AR is available only when this topic has a 3D model wired; otherwise show a
+    // disabled "coming soon" action. Quizzes below work regardless.
+    var arLink = document.getElementById('ar-link');
+    if (t.model) {
+      arLink.href = 'ar.html?topic=' + encodeURIComponent(t.id);
+    } else {
+      arLink.classList.add('disabled');
+      arLink.setAttribute('aria-disabled', 'true');
+      arLink.removeAttribute('href');
+      arLink.querySelector('.action-sub').textContent = '3D model coming soon';
+      arLink.querySelector('.action-go').textContent = '';
+      arLink.addEventListener('click', function (e) { e.preventDefault(); });
+    }
     document.getElementById('pre-link').href = 'quiz.html?topic=' + encodeURIComponent(t.id) + '&mode=pre';
     document.getElementById('post-link').href = 'quiz.html?topic=' + encodeURIComponent(t.id) + '&mode=post';
 

@@ -65,7 +65,10 @@
     var quiz = t && window.QUIZZES && window.QUIZZES[t.id];
     if (!t || !t.ready || !quiz || !quiz.questions.length) { location.replace('dashboard.html'); return; }
 
-    var Q = quiz.questions, P = window.QUIZ_POINTS, WF = window.QUIZ_WRONG_FEEDBACK;
+    var Q = quiz.questions, P = window.QUIZ_POINTS;
+    var CF = window.QUIZ_CORRECT_FEEDBACK || ['Correct!'];
+    var WF = window.QUIZ_WRONG_FEEDBACK || ['Not quite.'];
+    function pick(a) { return a[Math.floor(Math.random() * a.length)]; }
     var idx = 0, score = 0, correctCount = 0, answers = [], shownAt = 0;
     var modeLabel = mode === 'post' ? 'Post-test' : 'Pre-test';
 
@@ -118,11 +121,10 @@
 
       $('score-chip').textContent = score + ' pts';
       var fb = $('q-feedback'); fb.hidden = false;
-      if (right) { fb.classList.add('ok'); fb.textContent = 'Correct!  +' + pts + ' pts'; }
+      if (right) { fb.classList.add('ok'); fb.textContent = pick(CF) + '  +' + pts + ' pts'; }
       else {
         fb.classList.add('bad');
-        var phrase = WF[idx % WF.length];
-        fb.textContent = phrase + ' — correct answer highlighted.';
+        fb.textContent = pick(WF) + ' — correct answer highlighted.';
       }
       $('next-btn').hidden = false;
       $('next-btn').textContent = (idx === Q.length - 1) ? 'See results' : 'Next';

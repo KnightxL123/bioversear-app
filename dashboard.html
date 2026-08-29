@@ -59,14 +59,16 @@
     (window.TOPICS || []).forEach(function (t) {
       var badgeRow = '<div class="badge">' + ICON.medal + '<span>' + BV.escape(t.badge) + '</span></div>';
       var el;
-      if (t.ready && t.model) {
+      if (t.ready) {
+        // Available topic: quiz always works; AR only when a model is wired.
+        var arNote = t.model ? '' : '<div class="topic-note">Quiz ready · 3D model coming soon</div>';
         el = document.createElement('a');
         el.className = 'topic';
         el.setAttribute('role', 'listitem');
         el.href = 'topic.html?topic=' + encodeURIComponent(t.id);
         el.innerHTML =
           '<div class="thumb">' + ICON.cube + '</div>' +
-          '<div class="body"><div class="name">' + BV.escape(t.name) + '</div>' + badgeRow + '</div>' +
+          '<div class="body"><div class="name">' + BV.escape(t.name) + '</div>' + badgeRow + arNote + '</div>' +
           '<div class="go">' + ICON.chevron + '</div>';
       } else {
         el = document.createElement('div');
