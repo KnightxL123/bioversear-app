@@ -136,9 +136,60 @@
     }
     .dot { width: 7px; height: 7px; border-radius: 50%; background: #2E9E6B; }
     .hidden { display: none !important; }
+
+    /* ---- Splash / launch screen (Variant 1) ---- */
+    .splash {
+      position: fixed; inset: 0; z-index: 9999;
+      background: radial-gradient(130% 88% at 50% 33%, #2765B2 0%, #123f7a 43%, #08182f 100%);
+      display: flex; flex-direction: column; align-items: center;
+      padding: max(28px, env(safe-area-inset-top)) 24px calc(30px + env(safe-area-inset-bottom));
+      opacity: 1; transition: opacity .5s ease;
+    }
+    .splash.out { opacity: 0; pointer-events: none; }
+    .splash-hero {
+      flex: 1 1 auto; min-height: 0; width: auto; max-width: 84%; max-height: 52vh;
+      object-fit: contain; align-self: center;
+      filter: drop-shadow(0 12px 32px rgba(0,0,0,.4));
+      animation: heroIn .8s cubic-bezier(.2,.8,.2,1) both;
+    }
+    @keyframes heroIn { from { opacity: 0; transform: translateY(14px) scale(.97); } to { opacity: 1; transform: none; } }
+    .splash-brand { text-align: center; color: #fff; margin-top: 4px; animation: splashUp .7s ease .15s both; }
+    .splash-logo { width: 40px; height: 40px; margin: 0 auto 8px; }
+    .splash-name { font-size: 30px; font-weight: 800; letter-spacing: -.01em; line-height: 1; }
+    .splash-name span { color: #8FC0F2; }
+    .splash-tag { font-size: 13.5px; color: #C2DAF4; margin-top: 8px; letter-spacing: .05em; }
+    .splash-loader { width: 148px; height: 4px; border-radius: 99px; background: rgba(255,255,255,.18); margin-top: 24px; overflow: hidden; animation: splashUp .7s ease .25s both; }
+    .splash-bar { height: 100%; width: 0; background: #EAF3FF; border-radius: 99px; animation: splashBar 2.2s ease forwards; }
+    @keyframes splashBar { from { width: 0; } to { width: 100%; } }
+    .splash-note { font-size: 12.5px; color: #A9C6E8; margin-top: 13px; animation: splashUp .7s ease .3s both; }
+    @keyframes splashUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+    @media (prefers-reduced-motion: reduce) {
+      .splash-hero, .splash-brand, .splash-loader, .splash-note { animation: none; }
+      .splash-bar { animation: none; width: 100%; }
+    }
   </style>
 </head>
 <body>
+  <div id="splash" class="splash" role="status" aria-label="Loading BioVerseAR">
+    <img class="splash-hero" src="assets/splash/tarsier-hero.webp" alt="">
+    <div class="splash-brand">
+      <div class="splash-logo" aria-hidden="true">
+        <svg viewBox="0 0 48 48" fill="none">
+          <g stroke="#8FC0F2" stroke-width="2.4" fill="none">
+            <ellipse cx="24" cy="24" rx="21" ry="8"/>
+            <ellipse cx="24" cy="24" rx="21" ry="8" transform="rotate(60 24 24)"/>
+            <ellipse cx="24" cy="24" rx="21" ry="8" transform="rotate(120 24 24)"/>
+          </g>
+          <circle cx="24" cy="24" r="4.5" fill="#fff"/>
+        </svg>
+      </div>
+      <div class="splash-name">BioVerse<span>AR</span></div>
+      <div class="splash-tag">Explore. Learn. Discover.</div>
+    </div>
+    <div class="splash-loader"><div class="splash-bar"></div></div>
+    <div class="splash-note">Preparing your adventure…</div>
+  </div>
+
   <div class="wrap">
     <div class="brand">
       <div class="logo" aria-hidden="true">
@@ -332,6 +383,22 @@
     } else {
       renderSetup();
     }
+  })();
+  </script>
+
+  <script>
+  // Launch splash: shows once per app session, auto-dismisses, tap to skip.
+  (function () {
+    var splash = document.getElementById('splash');
+    if (!splash) return;
+    function remove() { if (splash.parentNode) splash.parentNode.removeChild(splash); }
+    try {
+      if (sessionStorage.getItem('bv_splash_seen')) { remove(); return; }
+      sessionStorage.setItem('bv_splash_seen', '1');
+    } catch (e) {}
+    function dismiss() { splash.classList.add('out'); setTimeout(remove, 550); }
+    var timer = setTimeout(dismiss, 2500);
+    splash.addEventListener('click', function () { clearTimeout(timer); dismiss(); });
   })();
   </script>
 </body>
