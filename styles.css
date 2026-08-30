@@ -422,6 +422,9 @@ model-viewer {
 .fx-badge { width: 34px; height: 34px; flex: 0 0 auto; border-radius: 50%; display: grid; place-items: center; color: #fff; font-weight: 800; font-size: 18px; line-height: 1; }
 .fx-badge.check { background: var(--primary); }
 .fx-badge.cross { background: var(--incorrect); }
+/* tarsier mascot */
+.fx-mascot { width: 56px; height: 56px; flex: 0 0 auto; object-fit: contain; }
+.fx-mascot-lg { display: block; width: 104px; height: 104px; margin: 0 auto 6px; object-fit: contain; }
 .fx-msg { min-width: 0; }
 .fx-title { font-size: 16px; font-weight: 800; line-height: 1.2; }
 .fx-sub { font-size: 13px; color: var(--muted); font-weight: 600; margin-top: 2px; }

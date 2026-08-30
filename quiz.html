@@ -40,6 +40,7 @@
 
     <!-- RESULT -->
     <section id="result" class="card quiz-card" hidden>
+      <img id="result-mascot" class="fx-mascot-lg" alt="" aria-hidden="true">
       <div class="result-ring" id="result-ring"><span id="result-score">0</span><small>pts</small></div>
       <h1 class="quiz-h" id="result-h">Nice work!</h1>
       <p class="quiz-p" id="result-sub">You answered 0 of 0 correctly.</p>
@@ -53,7 +54,7 @@
   <canvas class="fx-confetti" id="fx-cv" aria-hidden="true"></canvas>
   <div class="fx-banner" id="fx-banner" role="status" aria-live="polite" style="display:none">
     <div class="fx-row">
-      <span class="fx-badge" id="fx-emoji" aria-hidden="true"></span>
+      <img class="fx-mascot" id="fx-mascot" alt="" aria-hidden="true">
       <div class="fx-msg"><div class="fx-title" id="fx-title"></div><div class="fx-sub" id="fx-sub"></div></div>
     </div>
     <button class="fx-explain-toggle" id="fx-explain-toggle" type="button" hidden>See explanation<span class="chev" aria-hidden="true">⌄</span></button>
@@ -128,9 +129,7 @@
     function showBanner(kind, icon, title, sub, lastQ) {
       var b = $('fx-banner');
       b.className = 'fx-banner ' + kind;
-      var badge = $('fx-emoji');
-      badge.className = 'fx-badge ' + (icon === 'check' ? 'check' : 'cross');
-      badge.textContent = icon === 'check' ? '✓' : '✕';
+      $('fx-mascot').src = 'assets/mascot/tarsier-' + (icon === 'check' ? 'correct' : 'wrong') + '.png';
       $('fx-title').textContent = title;
       $('fx-sub').textContent = sub || '';
       $('next-btn').textContent = lastQ ? 'See results' : 'Continue';
@@ -250,6 +249,7 @@
       if (mode === 'post' && !BV.hasBadge(t.id)) { BV.awardBadge(t.id); newlyEarned = true; }
 
       $('game').hidden = true; $('result').hidden = false; $('score-chip').hidden = true;
+      $('result-mascot').src = 'assets/mascot/tarsier-celebrate.png';
       var passed = score >= maxPts * 0.6;
       $('result-h').textContent = passed ? 'Great work!' : 'Quiz complete!';
       $('result-score').textContent = '0'; countUp($('result-score'), score, '');
@@ -262,6 +262,7 @@
       }
 
       if (GS && !REDUCE) {
+        gsap.from('#result-mascot', { scale: 0.4, rotation: -8, duration: 0.6, ease: 'back.out(2.2)' });
         gsap.from('#result-ring', { scale: 0.7, opacity: 0, duration: 0.6, ease: 'back.out(2)' });
         gsap.from(['#result-h', '#result-sub'], { y: 12, opacity: 0, duration: 0.45, stagger: 0.08, ease: 'power3.out', delay: 0.15 });
         if (badgeShown) gsap.from('#badge-earned', { scale: 0.6, opacity: 0, duration: 0.6, ease: 'back.out(2)', delay: 0.45 });
