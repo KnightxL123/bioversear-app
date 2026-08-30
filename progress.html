@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#185FA5">
+  <title>BioVerseAR — Progress</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app has-nav">
+    <h1 class="page-h">Progress</h1>
+
+    <div class="stat-row" style="margin-bottom:20px">
+      <div class="stat amber"><div class="num" id="s-badges">0</div><div class="lbl">Badges</div></div>
+      <div class="stat"><div class="num" id="s-done">0</div><div class="lbl">Topics done</div></div>
+      <div class="stat"><div class="num" id="s-points">0</div><div class="lbl">Total points</div></div>
+    </div>
+
+    <h2 class="section-title">By topic</h2>
+    <div id="prog-list"></div>
+
+    <a class="btn secondary" href="leaderboard.html" style="margin-top:6px">View leaderboard</a>
+    <div class="spacer-grow"></div>
+  </div>
+
+  <nav id="bottomnav"></nav>
+
+  <script src="topics.js"></script>
+  <script src="app.js"></script>
+  <script>
+  (function () {
+    'use strict';
+    if (!BV.requireAuth()) return;
+    var $ = function (id) { return document.getElementById(id); };
+
+    var stats = BV.overallStats();
+    $('s-badges').textContent = stats.badges;
+    $('s-done').textContent = stats.done;
+    $('s-points').textContent = stats.points;
+
+    var list = $('prog-list');
+    (window.TOPICS || []).forEach(function (t) {
+      var item = document.createElement('div');
+      item.className = 'prog-item';
+      if (!t.ready) {
+        item.innerHTML =
+          '<div class="pi-head"><div class="pi-name">' + BV.escape(t.name) + '</div><div class="pi-pct muted">Soon</div></div>' +
+          '<div class="pi-meta"><span>Coming soon</span></div>';
+        list.appendChild(item); return;
+      }
+      var p = BV.topicProgress(t.id);
+      var meta = p.attempted
+        ? '<span>Best <b>' + p.best + '/' + p.max + '</b></span>' +
+          (p.pre != null ? '<span>Pre <b>' + p.pre + '</b></span>' : '') +
+          (p.post != null ? '<span>Post <b>' + p.post + '</b></span>' : '') +
+          (p.gain != null ? '<span>Gain <b>' + (p.gain >= 0 ? '+' : '') + p.gain + '</b></span>' : '') +
+          (p.done ? '<span style="color:var(--accent);font-weight:700">★ Badge earned</span>' : '')
+        : '<span>Not started yet</span>';
+      item.innerHTML =
+        '<div class="pi-head"><div class="pi-name">' + BV.escape(t.name) + '</div>' +
+          '<div class="pi-pct' + (p.attempted ? '' : ' muted') + '">' + p.pct + '%</div></div>' +
+        '<div class="pi-bar"><i style="width:' + p.pct + '%"></i></div>' +
+        '<div class="pi-meta">' + meta + '</div>';
+      list.appendChild(item);
+    });
+
+    BV.renderNav('progress');
+  })();
+  </script>
+</body>
+</html>

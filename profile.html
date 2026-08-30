@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#185FA5">
+  <title>BioVerseAR — Profile</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app has-nav">
+    <h1 class="page-h">Profile</h1>
+
+    <div class="profile-head">
+      <div class="avatar" id="avatar" aria-hidden="true">?</div>
+      <div>
+        <div class="p-alias" id="p-alias">student</div>
+        <div class="p-class">Class <span id="p-class">—</span></div>
+      </div>
+    </div>
+
+    <div class="stat-row" style="margin-bottom:22px">
+      <div class="stat amber"><div class="num" id="s-badges">0</div><div class="lbl">Badges</div></div>
+      <div class="stat"><div class="num" id="s-points">0</div><div class="lbl">Points</div></div>
+      <div class="stat"><div class="num" id="s-done">0</div><div class="lbl">Completed</div></div>
+    </div>
+
+    <h2 class="section-title">Account</h2>
+    <div class="privacy" style="display:flex;gap:8px;align-items:flex-start;font-size:12.5px;color:var(--muted);background:var(--surface-2);border-radius:10px;padding:12px 14px;margin-bottom:16px;">
+      <svg viewBox="0 0 24 24" fill="none" style="flex:0 0 auto;width:15px;height:15px;margin-top:1px"><path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6l7-3z" stroke="#185FA5" stroke-width="1.5"/></svg>
+      <span>No account is created. Your alias and class code, scores, and badges are saved only on this device and never sent anywhere.</span>
+    </div>
+
+    <button class="btn secondary" id="signout" type="button">Switch student / sign out</button>
+    <div class="spacer-grow"></div>
+  </div>
+
+  <nav id="bottomnav"></nav>
+
+  <script src="topics.js"></script>
+  <script src="app.js"></script>
+  <script>
+  (function () {
+    'use strict';
+    var profile = BV.requireAuth(); if (!profile) return;
+    var $ = function (id) { return document.getElementById(id); };
+
+    $('p-alias').textContent = profile.alias;
+    $('p-class').textContent = profile.classCode || '—';
+    $('avatar').textContent = (profile.alias.trim()[0] || '?').toUpperCase();
+
+    var stats = BV.overallStats();
+    $('s-badges').textContent = stats.badges;
+    $('s-points').textContent = stats.points;
+    $('s-done').textContent = stats.done;
+
+    $('signout').addEventListener('click', function () {
+      if (confirm('Sign out on this device? Your alias, class code, scores and badges will be removed from this phone.')) BV.signOut();
+    });
+
+    BV.renderNav('profile');
+  })();
+  </script>
+</body>
+</html>

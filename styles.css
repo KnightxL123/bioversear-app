@@ -425,6 +425,83 @@ model-viewer {
 /* tarsier mascot */
 .fx-mascot { width: 56px; height: 56px; flex: 0 0 auto; object-fit: contain; }
 .fx-mascot-lg { display: block; width: 104px; height: 104px; margin: 0 auto 6px; object-fit: contain; }
+
+/* ================= Phase B: bottom nav + Home / Badges / Progress / Profile ================= */
+.app.has-nav { padding-bottom: 88px; }
+.bottomnav {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 50; max-width: 480px; margin: 0 auto;
+  background: var(--surface); border-top: 1px solid var(--line);
+  display: flex; padding: 6px 6px calc(6px + env(safe-area-inset-bottom)); box-shadow: 0 -2px 16px rgba(4,44,83,.06);
+}
+.navitem { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 8px 4px;
+  text-decoration: none; color: var(--muted); font-size: 11px; font-weight: 600; border-radius: 10px; }
+.navitem svg { width: 22px; height: 22px; }
+.navitem.on { color: var(--primary); }
+
+/* Home greeting header */
+.home-head { display: flex; align-items: center; gap: 12px; padding: 4px 2px 18px; }
+.home-head .logo { width: 42px; height: 42px; border-radius: 12px; background: var(--primary); display: grid; place-items: center; flex: 0 0 auto; }
+.home-head .logo svg { width: 24px; height: 24px; }
+.home-head .who { min-width: 0; flex: 1; }
+.home-head .who .hi { font-size: 16px; font-weight: 800; letter-spacing: -.01em; }
+.home-head .who .tagline { font-size: 12.5px; color: var(--muted); }
+.home-chips { display: flex; align-items: center; gap: 8px; flex: 0 0 auto; }
+.chip-stat { display: inline-flex; align-items: center; gap: 5px; font-size: 13px; font-weight: 800; color: var(--accent); background: var(--accent-tint); border-radius: 999px; padding: 6px 11px; }
+.chip-stat svg { width: 15px; height: 15px; }
+
+/* Continue-learning card */
+.continue { display: block; text-decoration: none; background: var(--primary); color: #fff; border-radius: var(--radius-lg); padding: 16px 18px; box-shadow: var(--shadow); margin-bottom: 22px; }
+.continue .ct-label { font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; opacity: .82; }
+.continue .ct-row { display: flex; align-items: center; gap: 12px; margin-top: 9px; }
+.continue .ct-thumb { width: 40px; height: 40px; border-radius: 11px; background: rgba(255,255,255,.16); display: grid; place-items: center; flex: 0 0 auto; }
+.continue .ct-thumb svg { width: 24px; height: 24px; }
+.continue .ct-name { font-size: 16px; font-weight: 800; flex: 1; min-width: 0; }
+.continue .ct-go { background: #fff; color: var(--primary); font-weight: 800; font-size: 13px; border-radius: 999px; padding: 7px 14px; flex: 0 0 auto; }
+.continue .ct-bar { height: 6px; border-radius: 99px; background: rgba(255,255,255,.22); overflow: hidden; margin-top: 12px; }
+.continue .ct-bar i { display: block; height: 100%; background: #fff; border-radius: 99px; }
+.continue .ct-sub { font-size: 12px; opacity: .85; margin-top: 7px; }
+
+/* topic card progress bar */
+.topic-prog { height: 5px; border-radius: 99px; background: var(--surface-2); overflow: hidden; margin-top: 8px; }
+.topic-prog i { display: block; height: 100%; background: var(--primary); border-radius: 99px; }
+
+/* stat tiles */
+.stat-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; }
+.stat { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 12px; text-align: center; box-shadow: var(--shadow); }
+.stat .num { font-size: 22px; font-weight: 800; color: var(--primary); line-height: 1; }
+.stat .lbl { font-size: 11.5px; color: var(--muted); font-weight: 600; margin-top: 5px; }
+.stat.amber .num { color: var(--accent); }
+
+/* badges grid */
+.badge-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 12px; }
+.badge-cell { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px 14px; text-align: center; box-shadow: var(--shadow); }
+.badge-cell.locked { background: var(--surface-2); border-style: dashed; }
+.badge-disc { width: 56px; height: 56px; margin: 0 auto 10px; border-radius: 50%; display: grid; place-items: center; background: var(--accent-tint); color: var(--accent); }
+.badge-cell.locked .badge-disc { background: #E3EAF2; color: #9AAABB; }
+.badge-disc svg { width: 30px; height: 30px; }
+.badge-cell .bname { font-size: 14px; font-weight: 800; }
+.badge-cell.locked .bname { color: var(--ink-soft); }
+.badge-cell .btopic { font-size: 12px; color: var(--muted); margin-top: 2px; }
+.badge-cell .bstate { font-size: 11px; font-weight: 700; margin-top: 8px; }
+.badge-cell .bstate.earned { color: var(--accent); }
+.badge-cell .bstate.locked { color: #9AAABB; }
+
+/* progress list */
+.prog-item { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px; box-shadow: var(--shadow); margin-bottom: 10px; }
+.prog-item .pi-head { display: flex; align-items: center; gap: 8px; }
+.prog-item .pi-name { font-weight: 700; font-size: 15px; flex: 1; }
+.prog-item .pi-pct { font-weight: 800; font-size: 14px; color: var(--primary); }
+.prog-item .pi-pct.muted { color: var(--muted); }
+.prog-item .pi-bar { height: 6px; border-radius: 99px; background: var(--surface-2); overflow: hidden; margin: 10px 0 8px; }
+.prog-item .pi-bar i { display: block; height: 100%; background: var(--primary); border-radius: 99px; }
+.prog-item .pi-meta { display: flex; gap: 16px; font-size: 12px; color: var(--muted); flex-wrap: wrap; }
+.prog-item .pi-meta b { color: var(--ink); }
+
+/* profile */
+.profile-head { display: flex; align-items: center; gap: 14px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px; box-shadow: var(--shadow); margin-bottom: 16px; }
+.profile-head .avatar { width: 56px; height: 56px; border-radius: 50%; background: var(--primary); color: #fff; display: grid; place-items: center; font-weight: 800; font-size: 24px; flex: 0 0 auto; }
+.profile-head .p-alias { font-size: 19px; font-weight: 800; }
+.profile-head .p-class { font-size: 13px; color: var(--muted); margin-top: 2px; }
 .fx-msg { min-width: 0; }
 .fx-title { font-size: 16px; font-weight: 800; line-height: 1.2; }
 .fx-sub { font-size: 13px; color: var(--muted); font-weight: 600; margin-top: 2px; }

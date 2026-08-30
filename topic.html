@@ -60,6 +60,7 @@
     var profile = BV.requireAuth(); if (!profile) return;
     var t = BV.topic(new URLSearchParams(location.search).get('topic'));
     if (!t || !t.ready) { location.replace('dashboard.html'); return; }
+    BV.setLastTopic(t.id);
     document.title = 'BioVerseAR — ' + t.name;
     document.getElementById('topic-name').textContent = t.name;
 

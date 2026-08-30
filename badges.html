@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#185FA5">
+  <title>BioVerseAR — Badges</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app has-nav">
+    <h1 class="page-h">Badges</h1>
+    <p class="section-title" style="text-transform:none;letter-spacing:0;font-weight:400;color:var(--muted);font-size:13px;margin:0 2px 16px;">
+      Earn a badge by completing each topic's post-test. <span id="badge-count"></span>
+    </p>
+    <div class="badge-grid" id="badge-grid"></div>
+    <div class="spacer-grow"></div>
+  </div>
+
+  <nav id="bottomnav"></nav>
+
+  <script src="topics.js"></script>
+  <script src="app.js"></script>
+  <script>
+  (function () {
+    'use strict';
+    if (!BV.requireAuth()) return;
+    var MEDAL = '<svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="9" r="5.2" stroke="currentColor" stroke-width="1.6"/><path d="M9 13.5L7.5 21l4.5-2.6L16.5 21 15 13.5" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>';
+    var LOCK = '<svg viewBox="0 0 24 24" fill="none"><rect x="5" y="10.5" width="14" height="9.5" rx="2" stroke="currentColor" stroke-width="1.7"/><path d="M8 10.5V8a4 4 0 018 0v2.5" stroke="currentColor" stroke-width="1.7"/></svg>';
+
+    var topics = window.TOPICS || [];
+    var stats = BV.overallStats();
+    document.getElementById('badge-count').textContent = 'You have ' + stats.badges + ' of ' + stats.total + '.';
+
+    var grid = document.getElementById('badge-grid');
+    topics.forEach(function (t) {
+      var earned = BV.hasBadge(t.id);
+      var cell = document.createElement('div');
+      cell.className = 'badge-cell' + (earned ? '' : ' locked');
+      cell.innerHTML =
+        '<div class="badge-disc">' + (earned ? MEDAL : LOCK) + '</div>' +
+        '<div class="bname">' + BV.escape(t.badge) + '</div>' +
+        '<div class="btopic">' + BV.escape(t.name) + '</div>' +
+        '<div class="bstate ' + (earned ? 'earned' : 'locked') + '">' + (earned ? '★ Earned' : 'Locked') + '</div>';
+      grid.appendChild(cell);
+    });
+
+    BV.renderNav('badges');
+  })();
+  </script>
+</body>
+</html>
