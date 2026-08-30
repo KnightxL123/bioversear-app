@@ -140,16 +140,17 @@
     /* ---- Splash / launch screen (Variant 1) ---- */
     .splash {
       position: fixed; inset: 0; z-index: 9999;
-      background: radial-gradient(130% 88% at 50% 33%, #2765B2 0%, #123f7a 43%, #08182f 100%);
+      background: radial-gradient(125% 100% at 50% 40%, #1A63C4 0%, #0C48A6 42%, #063A8C 100%);
       display: flex; flex-direction: column; align-items: center;
       padding: max(28px, env(safe-area-inset-top)) 24px calc(30px + env(safe-area-inset-bottom));
       opacity: 1; transition: opacity .5s ease;
     }
     .splash.out { opacity: 0; pointer-events: none; }
     .splash-hero {
-      flex: 1 1 auto; min-height: 0; width: auto; max-width: 84%; max-height: 52vh;
+      flex: 1 1 auto; min-height: 0; width: auto; max-width: 94%; max-height: 54vh;
       object-fit: contain; align-self: center;
-      filter: drop-shadow(0 12px 32px rgba(0,0,0,.4));
+      /* the image keeps its blue background but its edges are feathered to transparent
+         (baked into the WebP), so it dissolves into the matching gradient — no hard box */
       animation: heroIn .8s cubic-bezier(.2,.8,.2,1) both;
     }
     @keyframes heroIn { from { opacity: 0; transform: translateY(14px) scale(.97); } to { opacity: 1; transform: none; } }
