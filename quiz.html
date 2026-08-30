@@ -32,7 +32,12 @@
       <div class="q-progress"><div class="q-progress-bar" id="q-bar"></div></div>
       <div class="q-meta">
         <span id="q-count">Question 1 of 5</span>
-        <span class="q-diff" id="q-diff">Easy · 5 pts</span>
+        <div class="q-meta-right">
+          <span class="q-diff" id="q-diff">Easy · 5 pts</span>
+          <button class="q-flag" id="q-flag" type="button" aria-pressed="false" title="Flag this question for review">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M6 3v18M6 4h11l-2 3.5L17 11H6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
       </div>
       <div class="q-text" id="q-text">?</div>
       <div class="q-options" id="q-options"></div>
@@ -46,6 +51,7 @@
       <p class="quiz-p" id="result-sub">You answered 0 of 0 correctly.</p>
       <div class="badge-earned" id="badge-earned" hidden></div>
       <button class="btn" id="done-btn" type="button">Back to topic</button>
+      <a class="btn secondary" id="review-btn" href="#">Review answers</a>
       <button class="btn secondary" id="retake-btn" type="button">Retake</button>
     </section>
   </div>
@@ -81,7 +87,7 @@
     var CF = window.QUIZ_CORRECT_FEEDBACK || ['Correct!'];
     var WF = window.QUIZ_WRONG_FEEDBACK || ['Not quite.'];
     function pick(a) { return a[Math.floor(Math.random() * a.length)]; }
-    var idx = 0, score = 0, correctCount = 0, answers = [], shownAt = 0, streak = 0, maxStreak = 0;
+    var idx = 0, score = 0, correctCount = 0, answers = [], shownAt = 0, streak = 0, maxStreak = 0, flagged = {};
     var modeLabel = mode === 'post' ? 'Post-test' : 'Pre-test';
 
     var $ = function (id) { return document.getElementById(id); };
@@ -183,6 +189,8 @@
       $('q-count').textContent = 'Question ' + (idx + 1) + ' of ' + Q.length;
       var pts = P[q.difficulty] || 0;
       $('q-diff').textContent = q.difficulty.charAt(0).toUpperCase() + q.difficulty.slice(1) + ' · ' + pts + ' pts';
+      var fq = $('q-flag'), isF = !!flagged[q.id];
+      fq.classList.toggle('on', isF); fq.setAttribute('aria-pressed', isF ? 'true' : 'false');
       $('q-text').textContent = q.q;
 
       var host = $('q-options'); host.innerHTML = '';
@@ -232,6 +240,13 @@
       if (idx < Q.length) renderQuestion(); else finish();
     });
 
+    $('q-flag').addEventListener('click', function () {
+      var q = Q[idx];
+      if (flagged[q.id]) delete flagged[q.id]; else flagged[q.id] = true;
+      var on = !!flagged[q.id];
+      this.classList.toggle('on', on); this.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
+
     $('fx-explain-toggle').addEventListener('click', function () {
       var box = $('fx-explain');
       box.hidden = !box.hidden;
@@ -242,8 +257,9 @@
       hideBannerNow(); clearConfetti();
       var maxPts = Q.reduce(function (s, q) { return s + (P[q.difficulty] || 0); }, 0);
       var attempt = { mode: mode, score: score, max: maxPts, correct: correctCount, total: Q.length,
-                      answers: answers, at: new Date().toISOString() };
+                      answers: answers, flagged: Object.keys(flagged), at: new Date().toISOString() };
       BV.saveAttempt(t.id, mode, attempt);
+      $('review-btn').href = 'review.html?topic=' + encodeURIComponent(t.id) + '&mode=' + mode;
 
       var newlyEarned = false;
       if (mode === 'post' && !BV.hasBadge(t.id)) { BV.awardBadge(t.id); newlyEarned = true; }
@@ -273,7 +289,7 @@
 
     $('done-btn').addEventListener('click', function () { location.href = 'topic.html?topic=' + encodeURIComponent(t.id); });
     $('retake-btn').addEventListener('click', function () {
-      idx = 0; score = 0; correctCount = 0; answers = []; streak = 0; maxStreak = 0;
+      idx = 0; score = 0; correctCount = 0; answers = []; streak = 0; maxStreak = 0; flagged = {};
       clearConfetti(); hideBannerNow();
       $('result').hidden = true; $('game').hidden = false; $('score-chip').hidden = false;
       $('score-chip').textContent = '0 pts';
