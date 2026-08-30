@@ -117,6 +117,17 @@ window.QUIZ_WRONG_FEEDBACK = [
   "Keep learning! You'll get the next one!"
 ];
 
+// OPTIONAL per-question explanations, shown in the "See explanation" panel after a
+// question is answered. The four below are SAMPLES (Animal Cells) to demonstrate the
+// UI — the research team / Ma'am Leah will supply the real explanations. Keyed by
+// question id; any question without an entry simply shows no explanation toggle.
+window.QUIZ_EXPLANATIONS = {
+  'ac-e1': "The cell is the smallest unit that can carry out all the processes of life. Tissues, organs, and organ systems are all built from cells.",
+  'ac-e2': "The nucleus is the control centre of the cell — it holds the DNA and directs the cell's activities.",
+  'ac-e4': "Mitochondria are the “powerhouse of the cell”: they release usable energy (ATP) from food through cellular respiration.",
+  'ac-e7': "Ribosomes are the sites of protein synthesis — they read the cell's genetic instructions and build proteins."
+};
+
 window.QUIZZES = {
   // Animal Cells — 30 questions (10 easy, 10 medium, 10 hard)
   "animal-cells": {

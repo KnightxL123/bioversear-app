@@ -419,14 +419,29 @@ model-viewer {
 .fx-banner.up { transform: translateY(0); }
 @media (prefers-reduced-motion: reduce) { .fx-banner { transition: none; } }
 .fx-banner .fx-row { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
-.fx-emoji { font-size: 30px; flex: 0 0 auto; line-height: 1; }
+.fx-badge { width: 34px; height: 34px; flex: 0 0 auto; border-radius: 50%; display: grid; place-items: center; color: #fff; font-weight: 800; font-size: 18px; line-height: 1; }
+.fx-badge.check { background: var(--primary); }
+.fx-badge.cross { background: var(--incorrect); }
 .fx-msg { min-width: 0; }
 .fx-title { font-size: 16px; font-weight: 800; line-height: 1.2; }
 .fx-sub { font-size: 13px; color: var(--muted); font-weight: 600; margin-top: 2px; }
 .fx-banner .btn { margin: 0; }
-.fx-banner.ok { background: #EAF7EF; }
-.fx-banner.ok .fx-title { color: var(--correct); }
-.fx-banner.ok .btn { background: var(--correct); }
-.fx-banner.ok .btn:active { background: #25794f; }
+/* correct = on-brand blue (blue-theme board); the correct answer OPTION stays green */
+.fx-banner.ok { background: var(--primary-tint); }
+.fx-banner.ok .fx-title { color: var(--primary); }
+.fx-banner.ok .btn { background: var(--primary); }
+.fx-banner.ok .btn:active { background: var(--primary-press); }
 .fx-banner.bad { background: #FDECEA; }
 .fx-banner.bad .fx-title { color: var(--incorrect); }
+/* expandable explanation */
+.fx-explain-toggle {
+  -webkit-appearance: none; appearance: none; background: none; border: none; cursor: pointer;
+  font: inherit; font-weight: 700; font-size: 13px; color: var(--primary);
+  padding: 2px 0 10px; display: inline-flex; align-items: center; gap: 6px;
+}
+.fx-explain-toggle .chev { transition: transform .2s; font-size: 12px; }
+.fx-explain-toggle.open .chev { transform: rotate(180deg); }
+.fx-explain {
+  font-size: 13.5px; color: var(--ink-soft); line-height: 1.5;
+  background: var(--surface-2); border-radius: 10px; padding: 11px 13px; margin: 0 0 12px;
+}

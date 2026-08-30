@@ -53,9 +53,11 @@
   <canvas class="fx-confetti" id="fx-cv" aria-hidden="true"></canvas>
   <div class="fx-banner" id="fx-banner" role="status" aria-live="polite" style="display:none">
     <div class="fx-row">
-      <span class="fx-emoji" id="fx-emoji" aria-hidden="true"></span>
+      <span class="fx-badge" id="fx-emoji" aria-hidden="true"></span>
       <div class="fx-msg"><div class="fx-title" id="fx-title"></div><div class="fx-sub" id="fx-sub"></div></div>
     </div>
+    <button class="fx-explain-toggle" id="fx-explain-toggle" type="button" hidden>See explanation<span class="chev" aria-hidden="true">⌄</span></button>
+    <div class="fx-explain" id="fx-explain" hidden></div>
     <button class="btn" id="next-btn" type="button">Continue</button>
   </div>
 
@@ -78,7 +80,7 @@
     var CF = window.QUIZ_CORRECT_FEEDBACK || ['Correct!'];
     var WF = window.QUIZ_WRONG_FEEDBACK || ['Not quite.'];
     function pick(a) { return a[Math.floor(Math.random() * a.length)]; }
-    var idx = 0, score = 0, correctCount = 0, answers = [], shownAt = 0;
+    var idx = 0, score = 0, correctCount = 0, answers = [], shownAt = 0, streak = 0, maxStreak = 0;
     var modeLabel = mode === 'post' ? 'Post-test' : 'Pre-test';
 
     var $ = function (id) { return document.getElementById(id); };
@@ -123,10 +125,12 @@
 
     // Banner slide is CSS-driven (a class toggle) so the Continue button inside it is
     // always reachable even if the animation engine ever fails to run.
-    function showBanner(kind, emo, title, sub, lastQ) {
+    function showBanner(kind, icon, title, sub, lastQ) {
       var b = $('fx-banner');
       b.className = 'fx-banner ' + kind;
-      $('fx-emoji').textContent = emo;
+      var badge = $('fx-emoji');
+      badge.className = 'fx-badge ' + (icon === 'check' ? 'check' : 'cross');
+      badge.textContent = icon === 'check' ? '✓' : '✕';
       $('fx-title').textContent = title;
       $('fx-sub').textContent = sub || '';
       $('next-btn').textContent = lastQ ? 'See results' : 'Continue';
@@ -136,6 +140,17 @@
     function hideBannerNow() {
       var b = $('fx-banner');
       b.classList.remove('up'); b.style.display = 'none';
+      $('fx-explain').hidden = true; $('fx-explain-toggle').classList.remove('open');
+    }
+    // Optional per-question explanation: from the question itself or the shared map.
+    function explanationFor(q) {
+      return q.explanation || (window.QUIZ_EXPLANATIONS && window.QUIZ_EXPLANATIONS[q.id]) || '';
+    }
+    function setupExplain(q) {
+      var tog = $('fx-explain-toggle'), box = $('fx-explain');
+      tog.classList.remove('open'); box.hidden = true;
+      var e = explanationFor(q);
+      if (e) { box.textContent = e; tog.hidden = false; } else { tog.hidden = true; }
     }
 
     function popCorrect(el) {
@@ -200,18 +215,28 @@
 
       countUp($('score-chip'), score, ' pts'); bumpScore();
       var lastQ = (idx === Q.length - 1);
+      setupExplain(q);
       if (right) {
+        streak++; if (streak > maxStreak) maxStreak = streak;
         buzz(30); confetti(46, 6.5, 0.34);
-        showBanner('ok', '🎉', pick(CF), '+' + pts + ' points', lastQ);
+        var sub = '+' + pts + ' points' + (streak >= 2 ? '   ·   🔥 ' + streak + ' in a row' : '');
+        showBanner('ok', 'check', pick(CF), sub, lastQ);
       } else {
+        streak = 0;
         buzz([40, 40, 40]);
-        showBanner('bad', '💪', pick(WF), 'The correct answer is highlighted.', lastQ);
+        showBanner('bad', 'cross', pick(WF), 'The correct answer is: ' + q.options[q.correct], lastQ);
       }
     }
 
     $('next-btn').addEventListener('click', function () {
       idx++;
       if (idx < Q.length) renderQuestion(); else finish();
+    });
+
+    $('fx-explain-toggle').addEventListener('click', function () {
+      var box = $('fx-explain');
+      box.hidden = !box.hidden;
+      this.classList.toggle('open', !box.hidden);
     });
 
     function finish() {
@@ -228,7 +253,7 @@
       var passed = score >= maxPts * 0.6;
       $('result-h').textContent = passed ? 'Great work!' : 'Quiz complete!';
       $('result-score').textContent = '0'; countUp($('result-score'), score, '');
-      $('result-sub').textContent = 'You answered ' + correctCount + ' of ' + Q.length + ' correctly (' + score + ' / ' + maxPts + ' pts).';
+      $('result-sub').textContent = 'You answered ' + correctCount + ' of ' + Q.length + ' correctly (' + score + ' / ' + maxPts + ' pts).' + (maxStreak >= 3 ? '  Best streak: 🔥 ' + maxStreak + '.' : '');
 
       var badgeShown = false;
       if (newlyEarned || BV.hasBadge(t.id)) {
@@ -247,7 +272,7 @@
 
     $('done-btn').addEventListener('click', function () { location.href = 'topic.html?topic=' + encodeURIComponent(t.id); });
     $('retake-btn').addEventListener('click', function () {
-      idx = 0; score = 0; correctCount = 0; answers = [];
+      idx = 0; score = 0; correctCount = 0; answers = []; streak = 0; maxStreak = 0;
       clearConfetti(); hideBannerNow();
       $('result').hidden = true; $('game').hidden = false; $('score-chip').hidden = false;
       $('score-chip').textContent = '0 pts';
