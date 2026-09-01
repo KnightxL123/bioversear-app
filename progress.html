@@ -52,11 +52,11 @@
       }
       var p = BV.topicProgress(t.id);
       var meta = p.attempted
-        ? '<span>Best <b>' + p.best + '/' + p.max + '</b></span>' +
-          (p.pre != null ? '<span>Pre <b>' + p.pre + '</b></span>' : '') +
-          (p.post != null ? '<span>Post <b>' + p.post + '</b></span>' : '') +
-          (p.gain != null ? '<span>Gain <b>' + (p.gain >= 0 ? '+' : '') + p.gain + '</b></span>' : '') +
-          (p.done ? '<span style="color:var(--accent);font-weight:700">★ Badge earned</span>' : '')
+        ? ['easy', 'medium', 'hard'].map(function (d) {
+            var x = p.per[d], lbl = d.charAt(0).toUpperCase() + d.slice(1);
+            return '<span>' + lbl + ' <b>' + (x ? (x.correct + '/' + x.total) : '—') + '</b></span>';
+          }).join('') +
+          (p.done ? '<span style="color:var(--accent);font-weight:700">★ Badge</span>' : '')
         : '<span>Not started yet</span>';
       item.innerHTML =
         '<div class="pi-head"><div class="pi-name">' + BV.escape(t.name) + '</div>' +

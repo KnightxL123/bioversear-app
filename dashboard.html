@@ -73,7 +73,7 @@
           '<div class="ct-name">' + BV.escape(cont.name) + '</div>' +
           '<span class="ct-go">' + (p.attempted ? 'Continue' : 'Start') + '</span></div>' +
         '<div class="ct-bar"><i style="width:' + p.pct + '%"></i></div>' +
-        '<div class="ct-sub">' + (p.attempted ? (p.pct + '% · best ' + p.best + '/' + p.max + ' pts') : 'Not started yet — tap to begin') + '</div>';
+        '<div class="ct-sub">' + (p.attempted ? (p.passedCount + ' of 3 levels passed · ' + p.points + ' pts') : 'Not started yet — tap to begin') + '</div>';
     }
 
     // ---- Topic list ----

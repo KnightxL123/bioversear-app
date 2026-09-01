@@ -36,15 +36,28 @@
     _me: function () { var p = this.getProfile(); return p && p.alias ? p.alias : null; },
     _mine: function (all) { var me = this._me(); if (!me) return null; all[me] = all[me] || { topics: {}, badges: [] }; return all[me]; },
 
-    saveAttempt: function (topicId, mode, attempt) {
+    // Persist the BEST attempt per (topic, difficulty) so a weaker retake never
+    // lowers a student's record or leaderboard standing.
+    saveAttempt: function (topicId, diff, attempt) {
       var all = this._rall(), mine = this._mine(all); if (!mine) return;
       mine.topics[topicId] = mine.topics[topicId] || {};
-      mine.topics[topicId][mode] = attempt;
+      var prev = mine.topics[topicId][diff];
+      if (!prev || typeof prev.score !== 'number' || attempt.score >= prev.score) {
+        mine.topics[topicId][diff] = attempt;
+      }
       this._rsave(all);
     },
     getAttempts: function (topicId) {
       var all = this._rall(), me = this._me();
       return (me && all[me] && all[me].topics[topicId]) || {};
+    },
+    // Transient per-tab snapshot so "Review answers" shows the attempt the student
+    // JUST finished, even when it wasn't their best (which is what's persisted above).
+    stashReview: function (topicId, diff, attempt) {
+      try { sessionStorage.setItem('bioversear.review.' + topicId + '.' + diff, JSON.stringify(attempt)); } catch (e) {}
+    },
+    getReview: function (topicId, diff) {
+      try { return JSON.parse(sessionStorage.getItem('bioversear.review.' + topicId + '.' + diff) || 'null'); } catch (e) { return null; }
     },
     awardBadge: function (topicId) {
       var all = this._rall(), mine = this._mine(all); if (!mine) return;
@@ -54,33 +67,46 @@
       var all = this._rall(), me = this._me();
       return !!(me && all[me] && all[me].badges && all[me].badges.indexOf(topicId) >= 0);
     },
-    // On-device leaderboard: best (pre|post) per topic, summed across topics, per account.
+    // On-device leaderboard: sum of best score across all three difficulties of every
+    // topic, per account (attempting more levels earns more points).
     leaderboard: function () {
-      var all = this._rall();
+      var all = this._rall(), DIFFS = ['easy', 'medium', 'hard'];
       return Object.keys(all).map(function (alias) {
         var topics = (all[alias] && all[alias].topics) || {}, total = 0;
         Object.keys(topics).forEach(function (tid) {
           var t = topics[tid];
-          total += Math.max((t.pre && t.pre.score) || 0, (t.post && t.post.score) || 0);
+          DIFFS.forEach(function (d) { if (t[d] && typeof t[d].score === 'number') total += t[d].score; });
         });
         return { alias: alias, score: total, badges: ((all[alias] && all[alias].badges) || []).length };
       }).sort(function (a, b) { return b.score - a.score; });
     },
 
-    // ---- Phase B: per-topic progress, overall stats, last-topic, bottom nav ----
+    // ---- Per-topic progress, overall stats, last-topic, bottom nav ----
+    // Single-quiz model: each topic has three difficulty pools. "pct" is completion
+    // across the three levels (how many were passed at 60%+).
     topicProgress: function (topicId) {
-      var a = this.getAttempts(topicId);
-      var pre = a.pre && typeof a.pre.score === 'number' ? a.pre.score : null;
-      var post = a.post && typeof a.post.score === 'number' ? a.post.score : null;
-      var max = (a.post && a.post.max) || (a.pre && a.pre.max) || null;
-      var best = Math.max(pre || 0, post || 0);
-      var attempted = !!(a.pre || a.post);
+      var a = this.getAttempts(topicId), DIFFS = ['easy', 'medium', 'hard'];
+      var per = {}, attempted = false, passedCount = 0, points = 0;
+      var bestPct = 0, bestScore = 0, bestMax = 0, lastAt = null;
+      DIFFS.forEach(function (d) {
+        var at = a[d];
+        if (at && typeof at.score === 'number') {
+          attempted = true;
+          var pct = at.max ? Math.round(at.score / at.max * 100) : 0;
+          var passed = at.max ? (at.score >= at.max * 0.6) : false;
+          if (passed) passedCount++;
+          points += at.score;
+          if (pct > bestPct) { bestPct = pct; bestScore = at.score; bestMax = at.max; }
+          if (at.at && (!lastAt || at.at > lastAt)) lastAt = at.at;
+          per[d] = { score: at.score, max: at.max, correct: at.correct, total: at.total, pct: pct, passed: passed };
+        } else { per[d] = null; }
+      });
       return {
-        pre: pre, post: post, best: best, max: max,
-        attempted: attempted, done: this.hasBadge(topicId),
-        gain: (pre != null && post != null) ? (post - pre) : null,
-        pct: (max && attempted) ? Math.round(best / max * 100) : 0,
-        lastAt: (a.post && a.post.at) || (a.pre && a.pre.at) || null
+        per: per, attempted: attempted, passedCount: passedCount,
+        done: this.hasBadge(topicId), points: points,
+        best: bestScore, max: bestMax, bestPct: bestPct,
+        pct: Math.round(passedCount / DIFFS.length * 100),
+        lastAt: lastAt
       };
     },
     overallStats: function () {
@@ -91,7 +117,7 @@
         if (p.attempted) started++;
         if (p.done) done++;
         if (self.hasBadge(t.id)) badges++;
-        points += p.best;
+        points += p.points;
       });
       return { badges: badges, points: points, started: started, done: done, total: topics.length };
     },

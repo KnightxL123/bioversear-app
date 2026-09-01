@@ -351,6 +351,21 @@ model-viewer {
   background: var(--accent-tint); border-radius: 10px; padding: 10px 12px; text-align: center;
 }
 
+/* ---- Difficulty picker (topic page) ---- */
+.section-note { font-size: 13px; color: var(--muted); margin: -6px 2px 12px; }
+.diff-ic .diff-dot { width: 14px; height: 14px; border-radius: 50%; display: block; }
+.diff-ic.easy   { background: rgba(88, 204, 2, .14); }
+.diff-ic.easy   .diff-dot { background: #58CC02; }
+.diff-ic.medium { background: rgba(255, 159, 10, .16); }
+.diff-ic.medium .diff-dot { background: #FF9F0A; }
+.diff-ic.hard   { background: rgba(255, 75, 75, .14); }
+.diff-ic.hard   .diff-dot { background: #FF4B4B; }
+.diff-pts {
+  font-size: 11px; font-weight: 700; color: var(--muted); background: var(--surface-2);
+  padding: 2px 7px; border-radius: 999px; margin-left: 6px; vertical-align: middle;
+}
+.diff-card .action-go { white-space: nowrap; }
+
 /* ---- Quiz ---- */
 .quiz-card { text-align: center; margin-top: 10vh; }
 .quiz-mode {

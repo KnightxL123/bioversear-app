@@ -42,23 +42,26 @@
 
     var params = new URLSearchParams(location.search);
     var t = BV.topic(params.get('topic'));
-    var mode = params.get('mode') === 'post' ? 'post' : 'pre';
+    var dParam = params.get('diff');
+    var diff = (dParam === 'medium' || dParam === 'hard') ? dParam : 'easy';
     var quiz = t && window.QUIZZES && window.QUIZZES[t.id];
-    var attempt = t ? (BV.getAttempts(t.id)[mode]) : null;
-    if (!t || !quiz || !attempt || !attempt.answers) { location.replace('dashboard.html'); return; }
+    var pool = quiz && quiz[diff];
+    // Prefer the just-finished attempt (session snapshot); fall back to the saved best.
+    var attempt = t ? (BV.getReview(t.id, diff) || BV.getAttempts(t.id)[diff]) : null;
+    if (!t || !pool || !attempt || !attempt.answers) { location.replace('dashboard.html'); return; }
 
     document.title = 'BioVerseAR — Review';
     $('rv-title').textContent = t.name + ' · review';
     $('back').href = 'topic.html?topic=' + encodeURIComponent(t.id);
-    $('retake').href = 'quiz.html?topic=' + encodeURIComponent(t.id) + '&mode=' + mode;
+    $('retake').href = 'quiz.html?topic=' + encodeURIComponent(t.id) + '&diff=' + diff;
 
-    var byId = {}; quiz.questions.forEach(function (q) { byId[q.id] = q; });
+    var byId = {}; pool.forEach(function (q) { byId[q.id] = q; });
     var flagged = {}; (attempt.flagged || []).forEach(function (id) { flagged[id] = true; });
     var nFlag = (attempt.flagged || []).length;
-    var modeLabel = mode === 'post' ? 'Post-test' : 'Pre-test';
+    var diffLabel = diff.charAt(0).toUpperCase() + diff.slice(1);
 
     $('rv-summary').innerHTML =
-      '<div class="rv-sum-top"><span class="rv-mode">' + modeLabel + '</span>' +
+      '<div class="rv-sum-top"><span class="rv-mode">' + diffLabel + '</span>' +
         '<span class="rv-score">' + attempt.score + ' / ' + attempt.max + ' pts</span></div>' +
       '<div class="rv-sum-sub">' + attempt.correct + ' of ' + attempt.total + ' correct' +
         (nFlag ? ' · ' + nFlag + ' flagged' : '') + '</div>';

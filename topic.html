@@ -34,19 +34,24 @@
       <span class="action-go">›</span>
     </a>
 
-    <h2 class="section-title">Assessment</h2>
-    <a class="action" href="#" id="pre-link">
-      <span class="action-ic pre"><svg viewBox="0 0 24 24" fill="none"><path d="M9 11l3 3 6-6M4 6h7M4 12h4M4 18h10" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-      <span class="action-body"><span class="action-title">Pre-test</span><span class="action-sub" id="pre-sub">Take before exploring</span></span>
-      <span class="action-go" id="pre-score"></span>
-    </a>
-    <a class="action" href="#" id="post-link">
-      <span class="action-ic post"><svg viewBox="0 0 24 24" fill="none"><path d="M9 11l3 3 6-6M4 6h7M4 12h4M4 18h10" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-      <span class="action-body"><span class="action-title">Post-test</span><span class="action-sub" id="post-sub">Take after exploring</span></span>
-      <span class="action-go" id="post-score"></span>
-    </a>
+    <h2 class="section-title">Take the quiz</h2>
+    <p class="section-note">Choose your challenge — 10 questions, no penalty for wrong answers.</p>
 
-    <div class="gain" id="gain" hidden></div>
+    <a class="action diff-card" href="#" id="diff-easy" data-diff="easy">
+      <span class="action-ic diff-ic easy"><span class="diff-dot"></span></span>
+      <span class="action-body"><span class="action-title">Easy <span class="diff-pts">5 pts each</span></span><span class="action-sub" id="easy-sub">Recall &amp; basic understanding</span></span>
+      <span class="action-go" id="easy-go">›</span>
+    </a>
+    <a class="action diff-card" href="#" id="diff-medium" data-diff="medium">
+      <span class="action-ic diff-ic medium"><span class="diff-dot"></span></span>
+      <span class="action-body"><span class="action-title">Medium <span class="diff-pts">15 pts each</span></span><span class="action-sub" id="medium-sub">Apply &amp; explain concepts</span></span>
+      <span class="action-go" id="medium-go">›</span>
+    </a>
+    <a class="action diff-card" href="#" id="diff-hard" data-diff="hard">
+      <span class="action-ic diff-ic hard"><span class="diff-dot"></span></span>
+      <span class="action-body"><span class="action-title">Hard <span class="diff-pts">30 pts each</span></span><span class="action-sub" id="hard-sub">Analyse &amp; solve problems</span></span>
+      <span class="action-go" id="hard-go">›</span>
+    </a>
 
     <div class="spacer-grow"></div>
   </div>
@@ -70,7 +75,7 @@
     var card = document.getElementById('badge-card');
     card.classList.toggle('earned', earned);
     document.getElementById('badge-state').textContent = earned
-      ? 'Earned — nice work!' : 'Locked — complete the post-test to earn it';
+      ? 'Earned — nice work!' : 'Locked — pass any quiz (60%+) to earn it';
 
     // AR is available only when this topic has a 3D model wired; otherwise show a
     // disabled "coming soon" action. Quizzes below work regardless.
@@ -85,25 +90,18 @@
       arLink.querySelector('.action-go').textContent = '';
       arLink.addEventListener('click', function (e) { e.preventDefault(); });
     }
-    document.getElementById('pre-link').href = 'quiz.html?topic=' + encodeURIComponent(t.id) + '&mode=pre';
-    document.getElementById('post-link').href = 'quiz.html?topic=' + encodeURIComponent(t.id) + '&mode=post';
-
+    // Difficulty picker: link each card to the quiz and show the best result so far.
     var a = BV.getAttempts(t.id);
-    function scoreLabel(el, sub, at) {
+    ['easy', 'medium', 'hard'].forEach(function (d) {
+      document.getElementById('diff-' + d).href = 'quiz.html?topic=' + encodeURIComponent(t.id) + '&diff=' + d;
+      var at = a[d];
       if (at && typeof at.score === 'number') {
-        document.getElementById(el).textContent = at.score + ' pts';
-        document.getElementById(sub).textContent = at.correct + '/' + at.total + ' correct · retake anytime';
+        var passed = at.max && at.score >= at.max * 0.6;
+        document.getElementById(d + '-sub').textContent =
+          'Best: ' + at.correct + '/' + at.total + ' correct · ' + at.score + ' pts' + (passed ? ' ✓' : '');
+        document.getElementById(d + '-go').textContent = 'Retake ›';
       }
-    }
-    scoreLabel('pre-score', 'pre-sub', a.pre);
-    scoreLabel('post-score', 'post-sub', a.post);
-
-    if (a.pre && a.post) {
-      var gain = a.post.score - a.pre.score;
-      var g = document.getElementById('gain');
-      g.hidden = false;
-      g.textContent = 'Learning gain: ' + (gain >= 0 ? '+' : '') + gain + ' pts (post − pre)';
-    }
+    });
   })();
   </script>
 </body>
