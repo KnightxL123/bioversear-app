@@ -18,18 +18,19 @@
     } catch (e) { _sb = null; }
     return _sb;
   }
-  // Ensure an anonymous auth session exists; resolves to the user id (or null).
-  function ensureSession() {
+  // The currently logged-in user's id (or null). Real accounts only — no
+  // anonymous sign-in; the student logs in with a username + password.
+  function currentUid() {
     var c = sb();
     if (!c) return Promise.resolve(null);
     return c.auth.getSession().then(function (r) {
-      var s = r && r.data && r.data.session;
-      if (s) return s.user.id;
-      return c.auth.signInAnonymously().then(function (res) {
-        return (res && res.data && res.data.user) ? res.data.user.id : null;
-      });
+      return (r && r.data && r.data.session) ? r.data.session.user.id : null;
     }).catch(function () { return null; });
   }
+  // Usernames map to an internal handle so Supabase's email-based auth works
+  // without students needing a real email. (Login is case-insensitive.)
+  var AUTH_DOMAIN = 'students.bioversear.app';
+  function emailFor(username) { return String(username || '').trim().toLowerCase() + '@' + AUTH_DOMAIN; }
 
   window.BV = {
     getProfile: function () {
@@ -48,20 +49,62 @@
       if (c) { try { c.auth.signOut(); } catch (e) {} }
       location.href = 'index.html';
     },
-    // Save the on-device profile AND (best-effort) sync it to Supabase so the
-    // student shows up on the global leaderboard. Always resolves — never blocks
-    // the UI if offline/unconfigured.
-    saveProfile: function (alias, classCode) {
-      var prof = { alias: alias, classCode: classCode };
-      try { localStorage.setItem(KEY, JSON.stringify(prof)); } catch (e) {}
-      var c = sb(); if (!c) return Promise.resolve(prof);
-      return ensureSession().then(function (uid) {
-        if (!uid) return prof;
-        return c.from('profiles').upsert(
-          { id: uid, alias: alias, class_code: classCode, updated_at: new Date().toISOString() },
-          { onConflict: 'id' }
-        ).then(function () { return prof; });
-      }).catch(function () { return prof; });
+    // ---- Accounts: username + password. Real name is PRIVATE (teacher-only). ----
+    // Create a student account, then store the profile (alias + real name + class).
+    // Resolves { ok:true } or { ok:false, error:<message> }.
+    signUp: function (fullName, username, password, classCode) {
+      var c = sb();
+      if (!c) return Promise.resolve({ ok: false, error: 'No connection — try again when you are online.' });
+      var self = this;
+      return c.auth.signUp({ email: emailFor(username), password: password }).then(function (res) {
+        if (res.error) return { ok: false, error: self._authMsg(res.error) };
+        var uid = res.data && res.data.user && res.data.user.id;
+        if (!uid) return { ok: false, error: 'Could not create the account. Please try again.' };
+        return self._upsertProfile(uid, { alias: username, full_name: fullName, class_code: classCode, role: 'student' })
+          .then(function (up) {
+            if (up && up.error) return { ok: false, error: 'Account made, but saving your details failed. Tell your teacher.' };
+            self._writeMirror({ alias: username, classCode: classCode, fullName: fullName });
+            return { ok: true };
+          });
+      }).catch(function () { return { ok: false, error: 'Something went wrong creating the account.' }; });
+    },
+    logIn: function (username, password) {
+      var c = sb();
+      if (!c) return Promise.resolve({ ok: false, error: 'No connection — try again when you are online.' });
+      var self = this;
+      return c.auth.signInWithPassword({ email: emailFor(username), password: password }).then(function (res) {
+        if (res.error) return { ok: false, error: self._authMsg(res.error) };
+        var uid = res.data.user.id;
+        return c.from('profiles').select('alias,class_code,full_name').eq('id', uid).maybeSingle().then(function (pr) {
+          var row = (pr && pr.data) || {};
+          self._writeMirror({ alias: row.alias || username, classCode: row.class_code || '', fullName: row.full_name || '' });
+          return { ok: true };
+        });
+      }).catch(function () { return { ok: false, error: 'Something went wrong signing in.' }; });
+    },
+    // Change the password of the logged-in user.
+    changePassword: function (newPassword) {
+      var c = sb();
+      if (!c) return Promise.resolve({ ok: false, error: 'No connection.' });
+      var self = this;
+      return c.auth.updateUser({ password: newPassword }).then(function (res) {
+        return res.error ? { ok: false, error: self._authMsg(res.error) } : { ok: true };
+      }).catch(function () { return { ok: false, error: 'Could not change the password.' }; });
+    },
+    _upsertProfile: function (uid, fields) {
+      var c = sb(); if (!c) return Promise.resolve({});
+      var row = { id: uid, updated_at: new Date().toISOString() };
+      for (var k in fields) row[k] = fields[k];
+      return c.from('profiles').upsert(row, { onConflict: 'id' });
+    },
+    _writeMirror: function (prof) { try { localStorage.setItem(KEY, JSON.stringify(prof)); } catch (e) {} },
+    _authMsg: function (err) {
+      var m = (err && err.message) || '';
+      if (/already registered|already been registered|user already/i.test(m)) return 'That username is already taken — try another.';
+      if (/invalid login credentials/i.test(m)) return 'Wrong username or password.';
+      if (/password should be at least|at least 6/i.test(m)) return 'Password must be at least 6 characters.';
+      if (/confirm/i.test(m) && /email/i.test(m)) return 'Turn OFF "Confirm email" in Supabase Auth to allow username sign-up.';
+      return m || 'Something went wrong.';
     },
     topic: function (id) {
       var list = window.TOPICS || [];
@@ -96,7 +139,7 @@
     // means a stale/worse upsert can never lower the cloud score.
     _syncAttempt: function (topicId, diff, a) {
       var c = sb(); if (!c || !a) return;
-      ensureSession().then(function (uid) {
+      currentUid().then(function (uid) {
         if (!uid) return;
         // NB: return the builder so it is actually sent (supabase-js queries are
         // lazy — they only fire when .then()/await is chained).
@@ -146,7 +189,7 @@
     fetchLeaderboard: function () {
       var self = this, c = sb();
       if (!c) return Promise.resolve(self.leaderboard());
-      return ensureSession().then(function () {
+      return currentUid().then(function () {
         return c.rpc('get_leaderboard').then(function (r) {
           if (r.error || !r.data) return self.leaderboard();
           return r.data.map(function (row) {
@@ -161,7 +204,7 @@
     fetchScores: function () {
       var c = sb();
       if (!c) return Promise.resolve(null);
-      return ensureSession().then(function () {
+      return currentUid().then(function () {
         return c.rpc('get_scores').then(function (r) {
           if (r.error || !r.data) return null;
           return r.data.map(function (row) {

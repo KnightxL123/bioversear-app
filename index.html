@@ -101,6 +101,18 @@
       touch-action: manipulation;
     }
     .btn:active { background: var(--primary-press); }
+    .btn:disabled { opacity: .65; cursor: default; }
+    .auth-tabs {
+      display: flex; gap: 4px; background: #EEF3F9; border: 1px solid var(--line);
+      border-radius: 999px; padding: 4px; margin: 0 0 18px;
+    }
+    .auth-tab {
+      flex: 1; border: 0; background: transparent; font: inherit; font-size: 14px; font-weight: 700;
+      color: var(--muted); padding: 9px 10px; border-radius: 999px; cursor: pointer;
+    }
+    .auth-tab.on { background: var(--primary); color: #fff; }
+    .form-error { font-size: 12.5px; color: var(--danger); margin: -4px 0 12px; display: none; }
+    .form-error.show { display: block; }
     .btn.secondary {
       background: transparent; color: var(--primary);
       border: 1.5px solid var(--line);
@@ -211,34 +223,51 @@
       <p>Explore biology in augmented reality</p>
     </div>
 
-    <!-- SIGN-UP / FIRST RUN -->
+    <!-- LOG IN / SIGN UP -->
     <section id="setup" class="card" aria-labelledby="setup-title" hidden>
-      <h2 id="setup-title">Join your class</h2>
-      <p class="sub">Set up this device to start. Everything stays on this phone.</p>
+      <h2 id="setup-title" class="hidden">Log in or sign up</h2>
+      <div class="auth-tabs" id="auth-tabs" role="tablist">
+        <button class="auth-tab on" data-mode="login" type="button" role="tab">Log in</button>
+        <button class="auth-tab" data-mode="signup" type="button" role="tab">Sign up</button>
+      </div>
 
-      <form id="setup-form" novalidate>
+      <form id="login-form" novalidate>
         <div class="field">
-          <label for="alias">Alias <span class="hint">— a nickname, not your real name</span></label>
-          <input id="alias" name="alias" type="text" inputmode="text"
-                 autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false"
-                 maxlength="20" placeholder="e.g. sky-otter" aria-describedby="alias-error">
-          <div class="error" id="alias-error" role="alert"></div>
+          <label for="li-user">Username</label>
+          <input id="li-user" type="text" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" maxlength="20" placeholder="your username">
         </div>
-
         <div class="field">
-          <label for="classCode">Class code <span class="hint">— from your teacher; just labels this device</span></label>
-          <input id="classCode" name="classCode" type="text" inputmode="text"
-                 autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false"
-                 maxlength="40" placeholder="e.g. BIO7A" aria-describedby="code-error">
-          <div class="error" id="code-error" role="alert"></div>
+          <label for="li-pass">Password</label>
+          <input id="li-pass" type="password" autocomplete="current-password" maxlength="64" placeholder="your password">
         </div>
+        <div class="form-error" id="login-error" role="alert"></div>
+        <button class="btn" type="submit">Log in</button>
+      </form>
 
-        <button class="btn" type="submit">Start</button>
+      <form id="signup-form" novalidate hidden>
+        <div class="field">
+          <label for="su-name">Full name <span class="hint">— only your teacher sees this</span></label>
+          <input id="su-name" type="text" autocomplete="off" autocapitalize="words" maxlength="60" placeholder="e.g. Juan Dela Cruz">
+        </div>
+        <div class="field">
+          <label for="su-user">Username <span class="hint">— shown on the leaderboard</span></label>
+          <input id="su-user" type="text" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" maxlength="20" placeholder="e.g. sky_otter">
+        </div>
+        <div class="field">
+          <label for="su-pass">Password <span class="hint">— at least 6 characters</span></label>
+          <input id="su-pass" type="password" autocomplete="new-password" maxlength="64" placeholder="make a password">
+        </div>
+        <div class="field">
+          <label for="su-code">Class code <span class="hint">— from your teacher</span></label>
+          <input id="su-code" type="text" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" maxlength="40" placeholder="e.g. BIO7A">
+        </div>
+        <div class="form-error" id="signup-error" role="alert"></div>
+        <button class="btn" type="submit">Create account</button>
       </form>
 
       <div class="privacy">
         <svg viewBox="0 0 24 24" fill="none"><path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6l7-3z" stroke="#185FA5" stroke-width="1.5"/></svg>
-        <span>No password and no real name. Your alias and class code sync to your class leaderboard — nothing else about you is collected.</span>
+        <span>Your <strong>real name is private</strong> — only your teacher can see it. Classmates see only your username. No email needed.</span>
       </div>
     </section>
 
@@ -253,7 +282,7 @@
       </div>
       <h2 id="welcome-title" class="hidden">Welcome back</h2>
       <button class="btn" id="continue-btn" type="button">Continue to BioVerseAR</button>
-      <button class="btn secondary" id="signout-btn" type="button">Switch student / sign out</button>
+      <button class="btn secondary" id="signout-btn" type="button">Log out</button>
     </section>
 
     <div class="offline-tag" aria-live="polite">
@@ -268,149 +297,95 @@
   <script>
   (function () {
     'use strict';
-
-    // ---- On-device store (localStorage). BV (app.js) mirrors the profile to
-    // Supabase for the global leaderboard; this local copy keeps the app working
-    // offline. ----
     var KEY = 'bioversear.profile.v1';
-    var Store = {
-      available: (function () {
-        try { var k = '__t'; localStorage.setItem(k, '1'); localStorage.removeItem(k); return true; }
-        catch (e) { return false; }
-      })(),
-      load: function () {
-        try { return JSON.parse(localStorage.getItem(KEY) || 'null'); }
-        catch (e) { return null; }
-      },
-      save: function (profile) {
-        try { localStorage.setItem(KEY, JSON.stringify(profile)); return true; }
-        catch (e) { return false; }
-      },
-      clear: function () {
-        try { localStorage.removeItem(KEY); } catch (e) {}
-      }
-    };
-
-    // ---- Validation (adjust rules here to match your real class-code format) ----
-    function validateAlias(v) {
-      v = (v || '').trim();
-      if (!v) return 'Please enter an alias.';
-      if (v.length < 2) return 'Alias is too short.';
-      if (v.length > 20) return 'Alias is too long (max 20).';
-      if (!/^[A-Za-z0-9 _-]+$/.test(v)) return 'Use letters, numbers, spaces, - or _ only.';
-      return null;
-    }
-    function validateCode(v) {
-      // The class code is only an on-device LABEL here (no server to verify it),
-      // so we require that something was entered but impose NO format rules that
-      // would reject whatever the teacher actually chose (e.g. "BIO7A", "Period 3").
-      v = (v || '').trim();
-      if (!v) return 'Please enter your class code.';
-      if (v.length > 40) return 'That is too long (max 40 characters).';
-      return null;
-    }
-
-    // ---- View helpers ----
     var $ = function (id) { return document.getElementById(id); };
     var setup = $('setup'), welcome = $('welcome');
 
-    function showError(inputId, errId, msg) {
-      var input = $(inputId), err = $(errId);
-      if (msg) {
-        input.setAttribute('aria-invalid', 'true');
-        err.textContent = msg; err.classList.add('show');
-      } else {
-        input.removeAttribute('aria-invalid');
-        err.textContent = ''; err.classList.remove('show');
-      }
+    var storageOk = (function () {
+      try { var k = '__t'; localStorage.setItem(k, '1'); localStorage.removeItem(k); return true; }
+      catch (e) { return false; }
+    })();
+    function loadMirror() { try { return JSON.parse(localStorage.getItem(KEY) || 'null'); } catch (e) { return null; } }
+
+    // ---- Validation ----
+    function vName(v) { v = (v || '').trim();
+      if (!v) return 'Please enter your full name.';
+      if (v.length < 2) return 'Name is too short.';
+      if (v.length > 60) return 'Name is too long.'; return null; }
+    function vUser(v) { v = (v || '').trim();
+      if (!v) return 'Please choose a username.';
+      if (v.length < 3) return 'Username must be at least 3 characters.';
+      if (v.length > 20) return 'Username is too long (max 20).';
+      if (!/^[A-Za-z0-9._-]+$/.test(v)) return 'Use letters, numbers, . _ or - (no spaces).'; return null; }
+    function vPass(v) { if (!v) return 'Please enter a password.';
+      if (v.length < 6) return 'Password must be at least 6 characters.'; return null; }
+    function vCode(v) { v = (v || '').trim();
+      if (!v) return 'Please enter your class code.';
+      if (v.length > 40) return 'That is too long (max 40 characters).'; return null; }
+
+    function showErr(id, msg) { var e = $(id); e.textContent = msg || ''; e.classList.toggle('show', !!msg); }
+    function busy(form, on, label) {
+      var btn = form.querySelector('button[type="submit"]'); if (!btn) return;
+      if (on) { btn.dataset.t = btn.textContent; btn.disabled = true; btn.textContent = label; }
+      else { btn.disabled = false; if (btn.dataset.t) btn.textContent = btn.dataset.t; }
     }
 
-    function renderWelcome(profile) {
-      $('who-name').textContent = profile.alias;
-      $('who-code').textContent = profile.classCode;
-      var initial = (profile.alias.trim()[0] || '?').toUpperCase();
-      $('avatar').textContent = initial;
-      setup.hidden = true;
-      welcome.hidden = false;
-    }
-    function renderSetup() {
-      welcome.hidden = true;
-      setup.hidden = false;
-      $('alias').focus();
-    }
-
-    // ---- Wire up ----
-    if (!Store.available) {
-      // localStorage blocked (e.g. private mode). Be honest rather than silently fail.
-      $('net-text').textContent = 'This browser is blocking on-device storage — sign-in cannot be saved.';
-      $('net-dot').style.background = '#B42318';
-    }
-
-    $('setup-form').addEventListener('submit', function (e) {
-      e.preventDefault();
-      var aliasRaw = $('alias').value;
-      var codeRaw = $('classCode').value;
-      var aErr = validateAlias(aliasRaw);
-      var cErr = validateCode(codeRaw);
-      showError('alias', 'alias-error', aErr);
-      showError('classCode', 'code-error', cErr);
-      if (aErr || cErr) {
-        ($('alias').getAttribute('aria-invalid') ? $('alias') : $('classCode')).focus();
-        return;
-      }
-      var profile = {
-        alias: aliasRaw.trim(),
-        classCode: codeRaw.trim().replace(/\s+/g, ' '), // stored verbatim as a label (whitespace tidied)
-        createdAt: new Date().toISOString()
-      };
-      if (!Store.save(profile)) {
-        showError('alias', 'alias-error', 'Could not save on this device. Check browser storage settings.');
-        return;
-      }
-      // Save locally, then sync the anonymous profile to Supabase before moving on
-      // (so the student appears on the leaderboard). Redirect anyway after a short
-      // wait so a slow/absent connection never blocks sign-up.
-      var go = function () { location.href = 'dashboard.html'; };
-      var btn = $('setup-form').querySelector('button[type="submit"]');
-      if (window.BV && BV.saveProfile) {
-        if (btn) { btn.disabled = true; btn.textContent = 'Setting up…'; }
-        var done = false, finish = function () { if (!done) { done = true; go(); } };
-        BV.saveProfile(profile.alias, profile.classCode).then(finish, finish);
-        setTimeout(finish, 2500);
-      } else {
-        go();
-      }
+    // ---- Tab toggle (Log in / Sign up) ----
+    $('auth-tabs').addEventListener('click', function (e) {
+      var b = e.target.closest('.auth-tab'); if (!b) return;
+      var mode = b.getAttribute('data-mode');
+      [].forEach.call(this.children, function (c) { c.classList.toggle('on', c === b); });
+      $('login-form').hidden = mode !== 'login';
+      $('signup-form').hidden = mode !== 'signup';
     });
 
-    // Clear a field's error as the user edits it
-    ['alias', 'classCode'].forEach(function (id) {
-      $(id).addEventListener('input', function () {
-        showError(id, id === 'alias' ? 'alias-error' : 'code-error', null);
+    // ---- Log in ----
+    $('login-form').addEventListener('submit', function (e) {
+      e.preventDefault();
+      var u = $('li-user').value, p = $('li-pass').value;
+      var err = vUser(u) || vPass(p);
+      if (err) { showErr('login-error', err); return; }
+      showErr('login-error', ''); busy(this, true, 'Logging in…');
+      BV.logIn(u.trim(), p).then(function (r) {
+        if (r.ok) { location.href = 'dashboard.html'; }
+        else { showErr('login-error', r.error); busy($('login-form'), false); }
       });
     });
 
-    $('signout-btn').addEventListener('click', function () {
-      if (confirm('Sign out on this device? Your alias and class code will be removed from this phone.')) {
-        Store.clear();
-        $('setup-form').reset();
-        renderSetup();
-      }
+    // ---- Sign up ----
+    $('signup-form').addEventListener('submit', function (e) {
+      e.preventDefault();
+      var name = $('su-name').value, u = $('su-user').value, p = $('su-pass').value, code = $('su-code').value;
+      var err = vName(name) || vUser(u) || vPass(p) || vCode(code);
+      if (err) { showErr('signup-error', err); return; }
+      showErr('signup-error', ''); busy(this, true, 'Creating…');
+      BV.signUp(name.trim(), u.trim(), p, code.trim().replace(/\s+/g, ' ')).then(function (r) {
+        if (r.ok) { location.href = 'dashboard.html'; }
+        else { showErr('signup-error', r.error); busy($('signup-form'), false); }
+      });
     });
 
-    $('continue-btn').addEventListener('click', function () {
-      location.href = 'dashboard.html';
-    });
+    ['li-user', 'li-pass'].forEach(function (id) { $(id).addEventListener('input', function () { showErr('login-error', ''); }); });
+    ['su-name', 'su-user', 'su-pass', 'su-code'].forEach(function (id) { $(id).addEventListener('input', function () { showErr('signup-error', ''); }); });
 
-    // ---- Boot: pick the view based on what's already on this device ----
-    var existing = Store.load();
-    if (existing && existing.alias && existing.classCode) {
-      renderWelcome(existing);
-      // Make sure this returning student exists in Supabase (profiles made before
-      // cloud sync, or first run on this device). Best-effort, non-blocking.
-      if (window.BV && BV.saveProfile) { try { BV.saveProfile(existing.alias, existing.classCode); } catch (e) {} }
-    } else {
-      renderSetup();
+    // ---- Welcome / continue / log out ----
+    function renderWelcome(m) {
+      $('who-name').textContent = m.alias;
+      $('who-code').textContent = m.classCode || '—';
+      $('avatar').textContent = ((m.alias || '?').trim()[0] || '?').toUpperCase();
+      setup.hidden = true; welcome.hidden = false;
     }
+    $('continue-btn').addEventListener('click', function () { location.href = 'dashboard.html'; });
+    $('signout-btn').addEventListener('click', function () { if (confirm('Log out on this device?')) { BV.signOut(); } });
+
+    if (!storageOk) {
+      $('net-text').textContent = 'This browser is blocking storage — login can’t be saved. Turn off private mode.';
+      $('net-dot').style.background = '#B42318';
+    }
+
+    // ---- Boot: already logged in on this device? ----
+    var m = loadMirror();
+    if (m && m.alias) { renderWelcome(m); } else { setup.hidden = false; }
   })();
   </script>
 

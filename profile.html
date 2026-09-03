@@ -33,18 +33,30 @@
     </div>
 
     <h2 class="section-title">Account</h2>
-    <div class="privacy" style="display:flex;gap:8px;align-items:flex-start;font-size:12.5px;color:var(--muted);background:var(--surface-2);border-radius:10px;padding:12px 14px;margin-bottom:16px;">
-      <svg viewBox="0 0 24 24" fill="none" style="flex:0 0 auto;width:15px;height:15px;margin-top:1px"><path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6l7-3z" stroke="#185FA5" stroke-width="1.5"/></svg>
-      <span>No account is created. Your alias and class code, scores, and badges are saved only on this device and never sent anywhere.</span>
+    <div class="acct-card">
+      <div class="acct-row"><span class="acct-k">Name</span><span class="acct-v" id="a-name">—</span></div>
+      <div class="acct-row"><span class="acct-k">Username</span><span class="acct-v" id="a-user">—</span></div>
+      <div class="acct-row"><span class="acct-k">Class</span><span class="acct-v" id="a-class">—</span></div>
     </div>
+    <p class="acct-note">Your name is private — only your teacher can see it. Classmates see only your username.</p>
 
-    <button class="btn secondary" id="signout" type="button">Switch student / sign out</button>
+    <h2 class="section-title">Change password</h2>
+    <form id="pw-form" class="acct-card" novalidate>
+      <div class="field"><label for="pw-new">New password</label><input id="pw-new" type="password" autocomplete="new-password" maxlength="64" placeholder="at least 6 characters"></div>
+      <div class="field"><label for="pw-confirm">Confirm new password</label><input id="pw-confirm" type="password" autocomplete="new-password" maxlength="64" placeholder="type it again"></div>
+      <div class="form-msg" id="pw-msg"></div>
+      <button class="btn" type="submit">Update password</button>
+    </form>
+
+    <button class="btn secondary" id="signout" type="button" style="margin-top:16px">Log out</button>
     <div class="spacer-grow"></div>
   </div>
 
   <nav id="bottomnav"></nav>
 
+  <script src="assets/vendor/supabase.min.js"></script>
   <script src="topics.js"></script>
+  <script src="config.js"></script>
   <script src="app.js"></script>
   <script>
   (function () {
@@ -56,13 +68,35 @@
     $('p-class').textContent = profile.classCode || '—';
     $('avatar').textContent = (profile.alias.trim()[0] || '?').toUpperCase();
 
+    // Account card — the real name is shown to the student themselves only.
+    $('a-name').textContent = profile.fullName || '—';
+    $('a-user').textContent = profile.alias;
+    $('a-class').textContent = profile.classCode || '—';
+
     var stats = BV.overallStats();
     $('s-badges').textContent = stats.badges;
     $('s-points').textContent = stats.points;
     $('s-done').textContent = stats.done;
 
+    // Change password (while logged in).
+    var msg = $('pw-msg');
+    function showMsg(kind, text) { msg.className = 'form-msg show ' + kind; msg.textContent = text; }
+    $('pw-form').addEventListener('submit', function (e) {
+      e.preventDefault();
+      var np = $('pw-new').value, cf = $('pw-confirm').value;
+      if (np.length < 6) { showMsg('err', 'Password must be at least 6 characters.'); return; }
+      if (np !== cf) { showMsg('err', 'The two passwords do not match.'); return; }
+      var btn = this.querySelector('button[type="submit"]'); btn.disabled = true; var t = btn.textContent; btn.textContent = 'Updating…';
+      BV.changePassword(np).then(function (r) {
+        btn.disabled = false; btn.textContent = t;
+        if (r.ok) { showMsg('ok', 'Password updated.'); $('pw-new').value = ''; $('pw-confirm').value = ''; }
+        else { showMsg('err', r.error); }
+      });
+    });
+    ['pw-new', 'pw-confirm'].forEach(function (id) { $(id).addEventListener('input', function () { msg.className = 'form-msg'; }); });
+
     $('signout').addEventListener('click', function () {
-      if (confirm('Sign out on this device? Your alias, class code, scores and badges will be removed from this phone.')) BV.signOut();
+      if (confirm('Log out on this device?')) BV.signOut();
     });
 
     BV.renderNav('profile');
