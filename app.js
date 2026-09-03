@@ -4,6 +4,33 @@
   'use strict';
   var KEY = 'bioversear.profile.v1';
 
+  // ---- Supabase (cloud sync). Optional: every method degrades gracefully to
+  // on-device storage when Supabase is unconfigured or the device is offline. ----
+  var CFG = window.BV_CONFIG || {};
+  var _sb = null, _sbTried = false;
+  function sb() {
+    if (_sbTried) return _sb;
+    _sbTried = true;
+    try {
+      if (window.supabase && CFG.SUPABASE_URL && CFG.SUPABASE_ANON_KEY) {
+        _sb = window.supabase.createClient(CFG.SUPABASE_URL, CFG.SUPABASE_ANON_KEY);
+      }
+    } catch (e) { _sb = null; }
+    return _sb;
+  }
+  // Ensure an anonymous auth session exists; resolves to the user id (or null).
+  function ensureSession() {
+    var c = sb();
+    if (!c) return Promise.resolve(null);
+    return c.auth.getSession().then(function (r) {
+      var s = r && r.data && r.data.session;
+      if (s) return s.user.id;
+      return c.auth.signInAnonymously().then(function (res) {
+        return (res && res.data && res.data.user) ? res.data.user.id : null;
+      });
+    }).catch(function () { return null; });
+  }
+
   window.BV = {
     getProfile: function () {
       try { return JSON.parse(localStorage.getItem(KEY) || 'null'); }
@@ -17,7 +44,24 @@
     },
     signOut: function () {
       try { localStorage.removeItem(KEY); } catch (e) {}
+      var c = sb();
+      if (c) { try { c.auth.signOut(); } catch (e) {} }
       location.href = 'index.html';
+    },
+    // Save the on-device profile AND (best-effort) sync it to Supabase so the
+    // student shows up on the global leaderboard. Always resolves — never blocks
+    // the UI if offline/unconfigured.
+    saveProfile: function (alias, classCode) {
+      var prof = { alias: alias, classCode: classCode };
+      try { localStorage.setItem(KEY, JSON.stringify(prof)); } catch (e) {}
+      var c = sb(); if (!c) return Promise.resolve(prof);
+      return ensureSession().then(function (uid) {
+        if (!uid) return prof;
+        return c.from('profiles').upsert(
+          { id: uid, alias: alias, class_code: classCode, updated_at: new Date().toISOString() },
+          { onConflict: 'id' }
+        ).then(function () { return prof; });
+      }).catch(function () { return prof; });
     },
     topic: function (id) {
       var list = window.TOPICS || [];
@@ -46,6 +90,23 @@
         mine.topics[topicId][diff] = attempt;
       }
       this._rsave(all);
+      this._syncAttempt(topicId, diff, mine.topics[topicId][diff]);
+    },
+    // Best-effort push of the (best) attempt to Supabase. The DB keep-best trigger
+    // means a stale/worse upsert can never lower the cloud score.
+    _syncAttempt: function (topicId, diff, a) {
+      var c = sb(); if (!c || !a) return;
+      ensureSession().then(function (uid) {
+        if (!uid) return;
+        // NB: return the builder so it is actually sent (supabase-js queries are
+        // lazy — they only fire when .then()/await is chained).
+        return c.from('attempts').upsert({
+          user_id: uid, topic_id: topicId, difficulty: diff,
+          score: a.score, max: a.max, correct: a.correct, total: a.total,
+          answers: a.answers || [], flagged: a.flagged || [],
+          updated_at: new Date().toISOString()
+        }, { onConflict: 'user_id,topic_id,difficulty' });
+      }).catch(function () {});
     },
     getAttempts: function (topicId) {
       var all = this._rall(), me = this._me();
@@ -79,6 +140,20 @@
         });
         return { alias: alias, score: total, badges: ((all[alias] && all[alias].badges) || []).length };
       }).sort(function (a, b) { return b.score - a.score; });
+    },
+    // Global leaderboard from Supabase (every device/class). Same row shape as
+    // leaderboard() plus classCode; falls back to the on-device list if offline.
+    fetchLeaderboard: function () {
+      var self = this, c = sb();
+      if (!c) return Promise.resolve(self.leaderboard());
+      return ensureSession().then(function () {
+        return c.rpc('get_leaderboard').then(function (r) {
+          if (r.error || !r.data) return self.leaderboard();
+          return r.data.map(function (row) {
+            return { alias: row.alias, classCode: row.class_code, score: Number(row.score) || 0, badges: Number(row.badges) || 0 };
+          });
+        });
+      }).catch(function () { return self.leaderboard(); });
     },
 
     // ---- Per-topic progress, overall stats, last-topic, bottom nav ----

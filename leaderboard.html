@@ -6,6 +6,12 @@
   <meta name="theme-color" content="#185FA5">
   <title>BioVerseAR — Leaderboard</title>
   <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/icons/favicon-32.png">
+  <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="BioVerseAR">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -16,7 +22,7 @@
       </a>
       <div class="title">Leaderboard</div>
     </div>
-    <p class="lb-scope">Everyone signed in on this device, ranked by total points.</p>
+    <p class="lb-scope">All students, ranked by total points.</p>
 
     <div class="lb-me" id="lb-me" hidden>
       <div class="lb-me-rank" id="lb-me-rank">#1</div>
@@ -29,59 +35,68 @@
       </div>
     </div>
 
-    <div class="lb-list" id="lb-list" role="list"></div>
+    <div class="lb-list" id="lb-list" role="list"><div class="lb-empty" id="lb-loading">Loading leaderboard…</div></div>
 
     <div class="spacer-grow"></div>
   </div>
 
+  <script src="assets/vendor/supabase.min.js"></script>
   <script src="topics.js"></script>
+  <script src="config.js"></script>
   <script src="app.js"></script>
   <script>
   (function () {
     'use strict';
     var profile = BV.requireAuth(); if (!profile) return;
 
-    var me = profile.alias;
+    var me = profile.alias, myCode = profile.classCode;
     var totalBadges = (window.TOPICS || []).length; // 7
-    var rows = BV.leaderboard();
 
     // Medal icon used in each row's badge count.
     var MEDAL = '<svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="9" r="4.6" stroke="currentColor" stroke-width="1.6"/><path d="M9.2 13L8 20l4-2.3L16 20l-1.2-7" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>';
 
-    // Current-student summary card (find my rank in the ranked list).
-    var myRank = -1;
-    for (var i = 0; i < rows.length; i++) { if (rows[i].alias === me) { myRank = i + 1; break; } }
-    var mine = myRank > 0 ? rows[myRank - 1] : { score: 0, badges: 0 };
-    var meCard = document.getElementById('lb-me');
-    meCard.hidden = false;
-    document.getElementById('lb-me-rank').textContent = myRank > 0 ? '#' + myRank : '—';
-    document.getElementById('lb-me-name').textContent = me;
-    document.getElementById('lb-me-sub').textContent =
-      mine.score + (mine.score === 1 ? ' pt' : ' pts') + ' · ' + mine.badges + '/' + totalBadges + ' badges'
-      + (rows.length > 1 ? ' · rank ' + (myRank > 0 ? myRank : '—') + ' of ' + rows.length : '');
+    // Match "me" by alias + class code (aliases can repeat across classes).
+    function isMe(r) { return r.alias === me && (!r.classCode || !myCode || r.classCode === myCode); }
 
-    // Ranked list.
-    var host = document.getElementById('lb-list');
-    if (!rows.length) {
-      host.innerHTML = '<div class="lb-empty">No scores yet. Take a topic quiz to get on the board!</div>';
-      return;
+    function render(rows) {
+      var myRank = -1;
+      for (var i = 0; i < rows.length; i++) { if (isMe(rows[i])) { myRank = i + 1; break; } }
+      var mine = myRank > 0 ? rows[myRank - 1] : { score: 0, badges: 0 };
+      var meCard = document.getElementById('lb-me');
+      meCard.hidden = false;
+      document.getElementById('lb-me-rank').textContent = myRank > 0 ? '#' + myRank : '—';
+      document.getElementById('lb-me-name').textContent = me;
+      document.getElementById('lb-me-sub').textContent =
+        mine.score + (mine.score === 1 ? ' pt' : ' pts') + ' · ' + mine.badges + '/' + totalBadges + ' badges'
+        + (rows.length > 1 ? ' · rank ' + (myRank > 0 ? myRank : '—') + ' of ' + rows.length : '');
+
+      var host = document.getElementById('lb-list');
+      host.innerHTML = '';
+      if (!rows.length) {
+        host.innerHTML = '<div class="lb-empty">No scores yet. Take a topic quiz to get on the board!</div>';
+        return;
+      }
+      var meSeen = false;
+      rows.forEach(function (r, idx) {
+        var rank = idx + 1, mineRow = isMe(r) && !meSeen; if (mineRow) meSeen = true;
+        var row = document.createElement('div');
+        row.className = 'lb-row' + (mineRow ? ' me' : '');
+        row.setAttribute('role', 'listitem');
+        var rankCls = 'lb-rank' + (rank <= 3 ? ' rank-' + rank : '');
+        var youTag = mineRow ? '<span class="lb-you">You</span>' : '';
+        row.innerHTML =
+          '<div class="' + rankCls + '">' + rank + '</div>' +
+          '<div class="lb-name">' + BV.escape(r.alias) + youTag + '</div>' +
+          '<div class="lb-stats">' +
+            '<span class="lb-badges" title="Badges earned">' + MEDAL + r.badges + '</span>' +
+            '<span class="lb-pts">' + r.score + ' <small>pts</small></span>' +
+          '</div>';
+        host.appendChild(row);
+      });
     }
-    rows.forEach(function (r, idx) {
-      var rank = idx + 1;
-      var row = document.createElement('div');
-      row.className = 'lb-row' + (r.alias === me ? ' me' : '');
-      row.setAttribute('role', 'listitem');
-      var rankCls = 'lb-rank' + (rank <= 3 ? ' rank-' + rank : '');
-      var youTag = r.alias === me ? '<span class="lb-you">You</span>' : '';
-      row.innerHTML =
-        '<div class="' + rankCls + '">' + rank + '</div>' +
-        '<div class="lb-name">' + BV.escape(r.alias) + youTag + '</div>' +
-        '<div class="lb-stats">' +
-          '<span class="lb-badges" title="Badges earned">' + MEDAL + r.badges + '</span>' +
-          '<span class="lb-pts">' + r.score + ' <small>pts</small></span>' +
-        '</div>';
-      host.appendChild(row);
-    });
+
+    // Global board from Supabase; fall back to the on-device list if offline.
+    BV.fetchLeaderboard().then(render, function () { render(BV.leaderboard()); });
   })();
   </script>
 </body>

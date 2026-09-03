@@ -3,7 +3,7 @@
 // Cells model so the whole app (and its in-page 3D render) works with no network.
 // NOTE: the Scene Viewer AR handoff is a separate Android app and does NOT read this
 // cache; it caches the model itself after the topic is opened online once.
-const CACHE_NAME = 'bioversear-app-v32';
+const CACHE_NAME = 'bioversear-app-v34';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -18,9 +18,11 @@ const ASSETS_TO_CACHE = [
   './review.html',
   './styles.css',
   './app.js',
+  './config.js',
   './topics.js',
   './questions.js',
   './manifest.json',
+  './assets/vendor/supabase.min.js',
   './assets/vendor/model-viewer.min.js',
   './assets/vendor/gsap.min.js',
   './assets/vendor/draco/draco_wasm_wrapper.js',
@@ -28,6 +30,11 @@ const ASSETS_TO_CACHE = [
   './assets/vendor/basis/basis_transcoder.js',
   './assets/vendor/basis/basis_transcoder.wasm',
   './assets/splash/tarsier-hero.webp',
+  './assets/icons/icon-192.png',
+  './assets/icons/icon-512.png',
+  './assets/icons/icon-maskable-512.png',
+  './assets/icons/apple-touch-icon.png',
+  './assets/icons/favicon-32.png',
   './assets/mascot/tarsier-correct.png',
   './assets/mascot/tarsier-wrong.png',
   './assets/mascot/tarsier-celebrate.png',
