@@ -113,6 +113,8 @@
     .auth-tab.on { background: var(--primary); color: #fff; }
     .form-error { font-size: 12.5px; color: var(--danger); margin: -4px 0 12px; display: none; }
     .form-error.show { display: block; }
+    .auth-alt { text-align: center; font-size: 13px; color: var(--muted); margin: 14px 0 0; }
+    .linklike { background: none; border: 0; color: var(--primary); font: inherit; font-weight: 700; cursor: pointer; padding: 0; text-decoration: underline; }
     .btn.secondary {
       background: transparent; color: var(--primary);
       border: 1.5px solid var(--line);
@@ -265,7 +267,31 @@
         <button class="btn" type="submit">Create account</button>
       </form>
 
-      <div class="privacy">
+      <form id="teacher-form" novalidate hidden>
+        <div class="field">
+          <label for="te-name">Full name</label>
+          <input id="te-name" type="text" autocomplete="off" autocapitalize="words" maxlength="60" placeholder="e.g. Ms. Leah Santos">
+        </div>
+        <div class="field">
+          <label for="te-user">Username</label>
+          <input id="te-user" type="text" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" maxlength="20" placeholder="e.g. ms_leah">
+        </div>
+        <div class="field">
+          <label for="te-pass">Password <span class="hint">— at least 6 characters</span></label>
+          <input id="te-pass" type="password" autocomplete="new-password" maxlength="64" placeholder="make a password">
+        </div>
+        <div class="field">
+          <label for="te-code">Teacher code <span class="hint">— from the school admin</span></label>
+          <input id="te-code" type="text" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" maxlength="40" placeholder="secret teacher code">
+        </div>
+        <div class="form-error" id="teacher-error" role="alert"></div>
+        <button class="btn" type="submit">Create teacher account</button>
+      </form>
+
+      <p class="auth-alt" id="alt-teacher" hidden>Are you a teacher? <button type="button" class="linklike" id="to-teacher">Sign up here</button></p>
+      <p class="auth-alt" id="alt-student" hidden><button type="button" class="linklike" id="to-student">← Back to student sign up</button></p>
+
+      <div class="privacy" id="privacy-note">
         <svg viewBox="0 0 24 24" fill="none"><path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6l7-3z" stroke="#185FA5" stroke-width="1.5"/></svg>
         <span>Your <strong>real name is private</strong> — only your teacher can see it. Classmates see only your username. No email needed.</span>
       </div>
@@ -330,14 +356,22 @@
       else { btn.disabled = false; if (btn.dataset.t) btn.textContent = btn.dataset.t; }
     }
 
-    // ---- Tab toggle (Log in / Sign up) ----
-    $('auth-tabs').addEventListener('click', function (e) {
-      var b = e.target.closest('.auth-tab'); if (!b) return;
-      var mode = b.getAttribute('data-mode');
-      [].forEach.call(this.children, function (c) { c.classList.toggle('on', c === b); });
+    // ---- Mode switch: login / signup (student) / teacher ----
+    function setMode(mode) {
       $('login-form').hidden = mode !== 'login';
       $('signup-form').hidden = mode !== 'signup';
+      $('teacher-form').hidden = mode !== 'teacher';
+      $('alt-teacher').hidden = mode !== 'signup';
+      $('alt-student').hidden = mode !== 'teacher';
+      $('privacy-note').hidden = mode === 'login';
+      var active = (mode === 'teacher') ? 'signup' : mode;
+      [].forEach.call($('auth-tabs').children, function (c) { c.classList.toggle('on', c.getAttribute('data-mode') === active); });
+    }
+    $('auth-tabs').addEventListener('click', function (e) {
+      var b = e.target.closest('.auth-tab'); if (!b) return; setMode(b.getAttribute('data-mode'));
     });
+    $('to-teacher').addEventListener('click', function () { setMode('teacher'); });
+    $('to-student').addEventListener('click', function () { setMode('signup'); });
 
     // ---- Log in ----
     $('login-form').addEventListener('submit', function (e) {
@@ -347,10 +381,24 @@
       if (err) { showErr('login-error', err); return; }
       showErr('login-error', ''); busy(this, true, 'Logging in…');
       BV.logIn(u.trim(), p).then(function (r) {
-        if (r.ok) { location.href = 'dashboard.html'; }
+        if (r.ok) { location.href = (r.role === 'teacher') ? 'teacher.html' : 'dashboard.html'; }
         else { showErr('login-error', r.error); busy($('login-form'), false); }
       });
     });
+
+    // ---- Teacher sign-up ----
+    $('teacher-form').addEventListener('submit', function (e) {
+      e.preventDefault();
+      var name = $('te-name').value, u = $('te-user').value, p = $('te-pass').value, code = $('te-code').value;
+      var err = vName(name) || vUser(u) || vPass(p) || (!code.trim() ? 'Enter the teacher code.' : null);
+      if (err) { showErr('teacher-error', err); return; }
+      showErr('teacher-error', ''); busy(this, true, 'Creating…');
+      BV.signUpTeacher(name.trim(), u.trim(), p, code.trim()).then(function (r) {
+        if (r.ok) { location.href = 'teacher.html'; }
+        else { showErr('teacher-error', r.error); busy($('teacher-form'), false); }
+      });
+    });
+    ['te-name', 'te-user', 'te-pass', 'te-code'].forEach(function (id) { $(id).addEventListener('input', function () { showErr('teacher-error', ''); }); });
 
     // ---- Sign up ----
     $('signup-form').addEventListener('submit', function (e) {
@@ -375,7 +423,9 @@
       $('avatar').textContent = ((m.alias || '?').trim()[0] || '?').toUpperCase();
       setup.hidden = true; welcome.hidden = false;
     }
-    $('continue-btn').addEventListener('click', function () { location.href = 'dashboard.html'; });
+    $('continue-btn').addEventListener('click', function () {
+      var mm = loadMirror(); location.href = (mm && mm.role === 'teacher') ? 'teacher.html' : 'dashboard.html';
+    });
     $('signout-btn').addEventListener('click', function () { if (confirm('Log out on this device?')) { BV.signOut(); } });
 
     if (!storageOk) {
@@ -385,7 +435,7 @@
 
     // ---- Boot: already logged in on this device? ----
     var m = loadMirror();
-    if (m && m.alias) { renderWelcome(m); } else { setup.hidden = false; }
+    if (m && m.alias) { renderWelcome(m); } else { setMode('login'); setup.hidden = false; }
   })();
   </script>
 

@@ -650,3 +650,22 @@ model-viewer {
 .form-msg.ok { color: #157347; }
 form.acct-card { padding: 16px 14px 14px; }
 form.acct-card .btn { margin-top: 2px; }
+
+/* ---- Teacher dashboard ---- */
+.t-hello { font-size: 13px; color: var(--muted); margin: -4px 2px 16px; }
+.tclass { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; font: inherit; color: inherit; cursor: pointer; -webkit-appearance: none; appearance: none; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); padding: 14px; margin-bottom: 10px; }
+.tclass:active { transform: translateY(1px); }
+.tclass-body { flex: 1; min-width: 0; }
+.tclass-name { font-weight: 700; font-size: 15px; }
+.tclass-meta { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+.tclass-meta b { color: var(--primary); letter-spacing: .04em; }
+.tclass-go { color: var(--primary); font-weight: 700; font-size: 18px; flex: 0 0 auto; }
+.troster { display: grid; grid-template-columns: 1fr auto; gap: 8px 12px; align-items: center; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); padding: 12px 14px; margin-bottom: 8px; }
+.troster-main { min-width: 0; }
+.troster-name { font-weight: 700; font-size: 15px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.troster-sub { font-size: 12.5px; color: var(--muted); margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.troster-reset { width: auto; min-height: 0; padding: 8px 12px; font-size: 13px; }
+.troster-pw { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 4px; }
+.troster-pw input { flex: 1; min-width: 140px; box-sizing: border-box; font: inherit; font-size: 14px; padding: 10px 12px; border: 1.5px solid var(--line); border-radius: 10px; background: var(--surface); color: var(--ink); -webkit-appearance: none; appearance: none; }
+.troster-pw .btn { width: auto; min-height: 0; padding: 10px 16px; font-size: 14px; }
+.troster-pw .troster-msg { flex-basis: 100%; margin: 0; }

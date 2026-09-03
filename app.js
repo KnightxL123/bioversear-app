@@ -63,7 +63,7 @@
         return self._upsertProfile(uid, { alias: username, full_name: fullName, class_code: classCode, role: 'student' })
           .then(function (up) {
             if (up && up.error) return { ok: false, error: 'Account made, but saving your details failed. Tell your teacher.' };
-            self._writeMirror({ alias: username, classCode: classCode, fullName: fullName });
+            self._writeMirror({ alias: username, classCode: classCode, fullName: fullName, role: 'student' });
             return { ok: true };
           });
       }).catch(function () { return { ok: false, error: 'Something went wrong creating the account.' }; });
@@ -75,10 +75,11 @@
       return c.auth.signInWithPassword({ email: emailFor(username), password: password }).then(function (res) {
         if (res.error) return { ok: false, error: self._authMsg(res.error) };
         var uid = res.data.user.id;
-        return c.from('profiles').select('alias,class_code,full_name').eq('id', uid).maybeSingle().then(function (pr) {
+        return c.from('profiles').select('alias,class_code,full_name,role').eq('id', uid).maybeSingle().then(function (pr) {
           var row = (pr && pr.data) || {};
-          self._writeMirror({ alias: row.alias || username, classCode: row.class_code || '', fullName: row.full_name || '' });
-          return { ok: true };
+          var role = row.role || 'student';
+          self._writeMirror({ alias: row.alias || username, classCode: row.class_code || '', fullName: row.full_name || '', role: role });
+          return { ok: true, role: role };
         });
       }).catch(function () { return { ok: false, error: 'Something went wrong signing in.' }; });
     },
@@ -105,6 +106,64 @@
       if (/password should be at least|at least 6/i.test(m)) return 'Password must be at least 6 characters.';
       if (/confirm/i.test(m) && /email/i.test(m)) return 'Turn OFF "Confirm email" in Supabase Auth to allow username sign-up.';
       return m || 'Something went wrong.';
+    },
+
+    // ---- Teacher accounts + classes (Phase 2) ----
+    // Guard for teacher-only pages.
+    requireTeacher: function () {
+      var p = this.getProfile();
+      if (!p || !p.alias) { location.replace('index.html'); return null; }
+      if (p.role !== 'teacher') { location.replace('dashboard.html'); return null; }
+      return p;
+    },
+    // Create a teacher account: makes the account, then claims the teacher role
+    // with the secret code. A wrong code removes the just-made account cleanly.
+    signUpTeacher: function (fullName, username, password, teacherCode) {
+      var c = sb();
+      if (!c) return Promise.resolve({ ok: false, error: 'No connection — try again when you are online.' });
+      var self = this;
+      return c.auth.signUp({ email: emailFor(username), password: password }).then(function (res) {
+        if (res.error) return { ok: false, error: self._authMsg(res.error) };
+        var uid = res.data && res.data.user && res.data.user.id;
+        if (!uid) return { ok: false, error: 'Could not create the account. Please try again.' };
+        return self._upsertProfile(uid, { alias: username, full_name: fullName, role: 'student' }).then(function (up) {
+          if (up && up.error) {
+            return c.rpc('delete_self').then(function () { return c.auth.signOut(); }).catch(function () {})
+              .then(function () { return { ok: false, error: 'Could not save the account. Please try again.' }; });
+          }
+          return c.rpc('claim_teacher', { code: teacherCode }).then(function (r) {
+            if (r.error || r.data !== true) {
+              return c.rpc('delete_self').then(function () { return c.auth.signOut(); })
+                .catch(function () {})
+                .then(function () { return { ok: false, error: 'Wrong teacher code.' }; });
+            }
+            self._writeMirror({ alias: username, fullName: fullName, classCode: '', role: 'teacher' });
+            return { ok: true };
+          });
+        });
+      }).catch(function () { return { ok: false, error: 'Something went wrong creating the account.' }; });
+    },
+    createClass: function (name) {
+      var c = sb(); if (!c) return Promise.resolve({ ok: false, error: 'No connection.' });
+      return c.rpc('create_class', { p_name: name }).then(function (r) {
+        if (r.error || !r.data || !r.data.length) return { ok: false, error: (r.error && r.error.message) || 'Could not create the class.' };
+        return { ok: true, cls: r.data[0] };
+      }).catch(function () { return { ok: false, error: 'Could not create the class.' }; });
+    },
+    getTeacherClasses: function () {
+      var c = sb(); if (!c) return Promise.resolve([]);
+      return c.rpc('get_teacher_classes').then(function (r) { return (r.error || !r.data) ? [] : r.data; }).catch(function () { return []; });
+    },
+    getClassRoster: function (code) {
+      var c = sb(); if (!c) return Promise.resolve([]);
+      return c.rpc('get_class_roster', { p_code: code }).then(function (r) { return (r.error || !r.data) ? [] : r.data; }).catch(function () { return []; });
+    },
+    resetStudentPassword: function (studentId, newPassword) {
+      var c = sb(); if (!c) return Promise.resolve({ ok: false, error: 'No connection.' });
+      return c.rpc('reset_student_password', { p_student: studentId, p_password: newPassword }).then(function (r) {
+        if (r.error) return { ok: false, error: r.error.message };
+        return r.data === true ? { ok: true } : { ok: false, error: 'Not allowed for this student.' };
+      }).catch(function () { return { ok: false, error: 'Could not reset the password.' }; });
     },
     topic: function (id) {
       var list = window.TOPICS || [];
