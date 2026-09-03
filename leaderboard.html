@@ -22,7 +22,11 @@
       </a>
       <div class="title">Leaderboard</div>
     </div>
-    <p class="lb-scope">All students, ranked by total points.</p>
+    <div class="lb-tabs" id="lb-tabs" role="tablist">
+      <button class="lb-tab on" data-scope="class" type="button" role="tab">My Class</button>
+      <button class="lb-tab" data-scope="all" type="button" role="tab">Everyone</button>
+    </div>
+    <p class="lb-scope" id="lb-scope">Loading…</p>
 
     <div class="lb-me" id="lb-me" hidden>
       <div class="lb-me-rank" id="lb-me-rank">#1</div>
@@ -55,10 +59,28 @@
     // Medal icon used in each row's badge count.
     var MEDAL = '<svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="9" r="4.6" stroke="currentColor" stroke-width="1.6"/><path d="M9.2 13L8 20l4-2.3L16 20l-1.2-7" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>';
 
+    // Class codes are matched case/space-insensitively so "7-Rizal" and "7 rizal"
+    // still group together (display keeps whatever the student typed).
+    function norm(s) { return String(s == null ? '' : s).trim().replace(/\s+/g, ' ').toUpperCase(); }
     // Match "me" by alias + class code (aliases can repeat across classes).
-    function isMe(r) { return r.alias === me && (!r.classCode || !myCode || r.classCode === myCode); }
+    function isMe(r) { return r.alias === me && (!r.classCode || !myCode || norm(r.classCode) === norm(myCode)); }
 
-    function render(rows) {
+    var allRows = [], current = 'class';
+
+    // Rows for the active tab: "class" = only my section; "all" = everyone.
+    function scopeRows(scope) {
+      if (scope !== 'class' || !myCode) return allRows;
+      var anyHaveCode = allRows.some(function (r) { return !!r.classCode; });
+      if (!anyHaveCode) return allRows; // offline/local fallback carries no class codes
+      return allRows.filter(function (r) { return norm(r.classCode) === norm(myCode); });
+    }
+
+    function render(scope) {
+      var rows = scopeRows(scope);
+      document.getElementById('lb-scope').textContent = (scope === 'class')
+        ? ('Class ' + (myCode || '—') + ' · ranked by points')
+        : 'All students · ranked by points';
+
       var myRank = -1;
       for (var i = 0; i < rows.length; i++) { if (isMe(rows[i])) { myRank = i + 1; break; } }
       var mine = myRank > 0 ? rows[myRank - 1] : { score: 0, badges: 0 };
@@ -73,7 +95,10 @@
       var host = document.getElementById('lb-list');
       host.innerHTML = '';
       if (!rows.length) {
-        host.innerHTML = '<div class="lb-empty">No scores yet. Take a topic quiz to get on the board!</div>';
+        host.innerHTML = '<div class="lb-empty">' +
+          (scope === 'class'
+            ? 'No one from your class is on the board yet — take a quiz to be the first!'
+            : 'No scores yet. Take a topic quiz to get on the board!') + '</div>';
         return;
       }
       var meSeen = false;
@@ -84,9 +109,11 @@
         row.setAttribute('role', 'listitem');
         var rankCls = 'lb-rank' + (rank <= 3 ? ' rank-' + rank : '');
         var youTag = mineRow ? '<span class="lb-you">You</span>' : '';
+        // In the "Everyone" view, tag each row with its class so classes are visible.
+        var codeTag = (scope === 'all' && r.classCode) ? '<span class="lb-code">' + BV.escape(r.classCode) + '</span>' : '';
         row.innerHTML =
           '<div class="' + rankCls + '">' + rank + '</div>' +
-          '<div class="lb-name">' + BV.escape(r.alias) + youTag + '</div>' +
+          '<div class="lb-name">' + BV.escape(r.alias) + youTag + codeTag + '</div>' +
           '<div class="lb-stats">' +
             '<span class="lb-badges" title="Badges earned">' + MEDAL + r.badges + '</span>' +
             '<span class="lb-pts">' + r.score + ' <small>pts</small></span>' +
@@ -95,8 +122,16 @@
       });
     }
 
+    document.getElementById('lb-tabs').addEventListener('click', function (e) {
+      var b = e.target.closest('.lb-tab'); if (!b) return;
+      current = b.getAttribute('data-scope');
+      [].forEach.call(this.children, function (c) { c.classList.toggle('on', c === b); });
+      render(current);
+    });
+
     // Global board from Supabase; fall back to the on-device list if offline.
-    BV.fetchLeaderboard().then(render, function () { render(BV.leaderboard()); });
+    BV.fetchLeaderboard().then(function (rows) { allRows = rows; render(current); },
+                             function () { allRows = BV.leaderboard(); render(current); });
   })();
   </script>
 </body>

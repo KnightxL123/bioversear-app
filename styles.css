@@ -90,7 +90,21 @@ body {
 .btn[hidden] { display: none !important; }
 
 /* ---- Leaderboard ---- */
+.lb-tabs {
+  display: flex; gap: 4px; background: var(--surface-2); border: 1px solid var(--line);
+  border-radius: 999px; padding: 4px; margin: 2px 0 10px;
+}
+.lb-tab {
+  flex: 1; border: 0; background: transparent; cursor: pointer; font: inherit;
+  font-size: 13.5px; font-weight: 700; color: var(--muted); padding: 8px 10px; border-radius: 999px;
+}
+.lb-tab.on { background: var(--primary); color: #fff; box-shadow: var(--shadow); }
+.lb-tab:active { transform: translateY(1px); }
 .lb-scope { font-size: 13px; color: var(--muted); margin: 0 2px 16px; }
+.lb-code {
+  font-size: 10.5px; font-weight: 700; color: var(--muted); background: var(--surface-2);
+  border: 1px solid var(--line); padding: 1px 6px; border-radius: 999px; margin-left: 7px; white-space: nowrap;
+}
 .lb-me {
   display: flex; align-items: center; gap: 14px;
   background: var(--primary); color: #fff; border-radius: var(--radius-lg);
