@@ -155,6 +155,22 @@
         });
       }).catch(function () { return self.leaderboard(); });
     },
+    // Granular per-(student, topic) scores from Supabase, for the per-topic +
+    // overall leaderboards. Resolves to an array, or null if the function isn't
+    // available yet / offline (caller then falls back to fetchLeaderboard).
+    fetchScores: function () {
+      var c = sb();
+      if (!c) return Promise.resolve(null);
+      return ensureSession().then(function () {
+        return c.rpc('get_scores').then(function (r) {
+          if (r.error || !r.data) return null;
+          return r.data.map(function (row) {
+            return { alias: row.alias, classCode: row.class_code, topicId: row.topic_id,
+                     score: Number(row.score) || 0, passed: !!row.passed };
+          });
+        });
+      }).catch(function () { return null; });
+    },
 
     // ---- Per-topic progress, overall stats, last-topic, bottom nav ----
     // Single-quiz model: each topic has three difficulty pools. "pct" is completion

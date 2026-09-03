@@ -102,3 +102,22 @@ as $$
 $$;
 
 grant execute on function public.get_leaderboard() to anon, authenticated;
+
+-- 4) PER-TOPIC SCORES (powers the topic + overall leaderboards) --------------
+-- One row per (student, topic): their total score in that topic and whether
+-- they've passed it. The client aggregates this into overall or per-topic boards.
+create or replace function public.get_scores()
+returns table (alias text, class_code text, topic_id text, score bigint, passed boolean)
+language sql
+security definer
+set search_path = public
+as $$
+  select p.alias, p.class_code, a.topic_id,
+         sum(a.score)::bigint as score,
+         bool_or(a.max > 0 and a.score >= a.max * 0.6) as passed
+  from public.profiles p
+  join public.attempts a on a.user_id = p.id
+  group by p.id, p.alias, p.class_code, a.topic_id;
+$$;
+
+grant execute on function public.get_scores() to anon, authenticated;
