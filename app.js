@@ -32,6 +32,26 @@
   var AUTH_DOMAIN = 'students.bioversear.app';
   function emailFor(username) { return String(username || '').trim().toLowerCase() + '@' + AUTH_DOMAIN; }
 
+  // ---- Per-topic visual identity: a distinct icon + colour for each of the 7
+  // topics (offline SVG, no assets). One source of truth, reused by the dashboard
+  // and any other screen that shows a topic. Icon strokes/fills use currentColor,
+  // so the tile's `color` drives the icon and `background` sets the tint. ----
+  function _tvIcon(paths, filled) {
+    return '<svg viewBox="0 0 24 24" fill="' + (filled ? 'currentColor' : 'none') +
+      '" stroke="' + (filled ? 'none' : 'currentColor') +
+      '" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">' + paths + '</svg>';
+  }
+  var TOPIC_VIS = {
+    'animal-cells':  { c: '#0FA595', b: '#E0F4F1', icon: _tvIcon('<circle cx="12" cy="12" r="8.5"/><circle cx="13" cy="11" r="3"/><circle cx="8.6" cy="15.2" r="1" fill="currentColor" stroke="none"/><circle cx="15.8" cy="15.4" r=".9" fill="currentColor" stroke="none"/>') },
+    'human-cells':   { c: '#7A6BF0', b: '#ECE9FC', icon: _tvIcon('<path d="M9 3c0 4 6 5 6 9s-6 5-6 9"/><path d="M15 3c0 4-6 5-6 9s6 5 6 9"/><path d="M9.7 6h4.6M8.6 12h6.8M9.7 18h4.6"/>') },
+    'life-sciences': { c: '#2CA457', b: '#E3F4E8', icon: _tvIcon('<path d="M5 19c-1-9 6-15 15-15 1 9-6 15-15 15z"/><path d="M8.5 15.5L16 8"/>') },
+    'earth-space':   { c: '#476FE4', b: '#E6EDFC', icon: _tvIcon('<circle cx="11" cy="12.5" r="6"/><ellipse cx="11" cy="12.5" rx="10.5" ry="3.4" transform="rotate(-22 11 12.5)"/><path d="M19.5 4.2l.6 1.5 1.5.5-1.5.6-.6 1.5-.6-1.5-1.5-.6 1.5-.5z" fill="currentColor" stroke="none"/>') },
+    'matter':        { c: '#E8871F', b: '#FBEDDA', icon: _tvIcon('<circle cx="7.5" cy="15.5" r="2.6"/><circle cx="16.5" cy="15.5" r="2.6"/><circle cx="12" cy="7.5" r="2.6"/><path d="M9 13.6l1.8-3.9M15 13.6l-1.8-3.9M9.9 15.5h4.2"/>') },
+    'force-motion':  { c: '#E65A54', b: '#FBE7E6', icon: _tvIcon('<path d="M6.5 12H17"/><path d="M13 7.5l4.5 4.5L13 16.5"/><path d="M3 9.2h2.4M2.5 14.8h3.2"/>') },
+    'energy':        { c: '#EAA015', b: '#FCEFD3', icon: _tvIcon('<path d="M13 2.5L6 13h4.3l-1.1 8.5L18 10.2h-4.7z"/>', true) }
+  };
+  var TOPIC_VIS_FALLBACK = { c: '#185FA5', b: '#E7EFF9', icon: _tvIcon('<path d="M12 2.8l7.5 4.3v9.8L12 21.2 4.5 16.9V7.1L12 2.8z"/><path d="M12 2.8v18.4M4.5 7.1L12 11.4l7.5-4.3"/>') };
+
   window.BV = {
     getProfile: function () {
       try { return JSON.parse(localStorage.getItem(KEY) || 'null'); }
@@ -316,6 +336,10 @@
     },
     setLastTopic: function (id) { try { localStorage.setItem('bioversear.lastTopic', id); } catch (e) {} },
     getLastTopic: function () { try { return localStorage.getItem('bioversear.lastTopic'); } catch (e) { return null; } },
+
+    // Per-topic icon + colour (see TOPIC_VIS above). Returns { c, b, icon };
+    // falls back to a neutral cube for any unknown id.
+    topicVisual: function (id) { return TOPIC_VIS[id] || TOPIC_VIS_FALLBACK; },
 
     // Injects the shared bottom navigation into <nav id="bottomnav"> and marks the active tab.
     renderNav: function (active) {

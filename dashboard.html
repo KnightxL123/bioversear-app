@@ -75,7 +75,7 @@
       card.href = 'topic.html?topic=' + encodeURIComponent(cont.id);
       card.innerHTML =
         '<div class="ct-label">Continue learning</div>' +
-        '<div class="ct-row"><div class="ct-thumb">' + ICON.cube + '</div>' +
+        '<div class="ct-row"><div class="ct-thumb">' + BV.topicVisual(cont.id).icon + '</div>' +
           '<div class="ct-name">' + BV.escape(cont.name) + '</div>' +
           '<span class="ct-go">' + (p.attempted ? 'Continue' : 'Start') + '</span></div>' +
         '<div class="ct-bar"><i style="width:' + p.pct + '%"></i></div>' +
@@ -89,15 +89,16 @@
       var el;
       if (t.ready) {
         var pr = BV.topicProgress(t.id);
+        var vis = BV.topicVisual(t.id);
         var arNote = t.model ? '' : '<div class="topic-note">Quiz ready · 3D model coming soon</div>';
-        var progBar = pr.attempted ? '<div class="topic-prog"><i style="width:' + pr.pct + '%"></i></div>' : '';
+        var progBar = pr.attempted ? '<div class="topic-prog"><i style="width:' + pr.pct + '%;background:' + vis.c + '"></i></div>' : '';
         var go = pr.attempted
-          ? '<div class="go" style="font-size:13px;font-weight:800;color:var(--primary)">' + pr.pct + '%</div>'
+          ? '<div class="go" style="font-size:13px;font-weight:800;color:' + vis.c + '">' + pr.pct + '%</div>'
           : '<div class="go">' + ICON.chevron + '</div>';
         el = document.createElement('a');
         el.className = 'topic'; el.setAttribute('role', 'listitem');
         el.href = 'topic.html?topic=' + encodeURIComponent(t.id);
-        el.innerHTML = '<div class="thumb">' + ICON.cube + '</div>' +
+        el.innerHTML = '<div class="thumb" style="background:' + vis.b + ';color:' + vis.c + '">' + vis.icon + '</div>' +
           '<div class="body"><div class="name">' + BV.escape(t.name) + '</div>' + badgeRow + arNote + progBar + '</div>' + go;
       } else {
         el = document.createElement('div');
