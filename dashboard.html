@@ -58,6 +58,11 @@
     };
 
     $('hi-alias').textContent = profile.alias;
+    // Personalise the header with the student's chosen avatar (falls back to the
+    // BioVerseAR mark for accounts made before avatars existed).
+    var logoEl = document.querySelector('.home-head .logo');
+    var headAv = profile.avatar && BV.avatarSvg(profile.avatar);
+    if (headAv && logoEl) { logoEl.classList.add('is-avatar'); logoEl.innerHTML = headAv; }
     var stats = BV.overallStats();
     $('badge-chip').innerHTML = ICON.medal + '<span>' + stats.badges + '/' + stats.total + '</span>';
 

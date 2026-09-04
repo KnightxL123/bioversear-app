@@ -40,6 +40,14 @@
     </div>
     <p class="acct-note">Your name is private — only your teacher can see it. Classmates see only your username.</p>
 
+    <h2 class="section-title">Your explorer</h2>
+    <div class="acct-card">
+      <div class="av-strip" id="p-avatars"></div>
+      <div class="av-tag" id="p-avtag"></div>
+      <div class="form-msg" id="av-msg"></div>
+      <button class="btn" type="button" id="av-save">Save explorer</button>
+    </div>
+
     <h2 class="section-title">Change password</h2>
     <form id="pw-form" class="acct-card" novalidate>
       <div class="field"><label for="pw-new">New password</label><input id="pw-new" type="password" autocomplete="new-password" maxlength="64" placeholder="at least 6 characters"></div>
@@ -66,7 +74,9 @@
 
     $('p-alias').textContent = profile.alias;
     $('p-class').textContent = profile.classCode || '—';
-    $('avatar').textContent = (profile.alias.trim()[0] || '?').toUpperCase();
+    var pav0 = profile.avatar && BV.avatarSvg(profile.avatar);
+    if (pav0) $('avatar').innerHTML = pav0;
+    else $('avatar').textContent = (profile.alias.trim()[0] || '?').toUpperCase();
 
     // Account card — the real name is shown to the student themselves only.
     $('a-name').textContent = profile.fullName || '—';
@@ -77,6 +87,39 @@
     $('s-badges').textContent = stats.badges;
     $('s-points').textContent = stats.points;
     $('s-done').textContent = stats.done;
+
+    // ---- Change explorer (avatar) ----
+    var pAvatar = profile.avatar || '';
+    (function buildProfileAvatars() {
+      var host = $('p-avatars'), tagEl = $('p-avtag');
+      BV.avatars().forEach(function (a) {
+        var b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'av-opt' + (a.id === pAvatar ? ' on' : '');
+        b.setAttribute('data-id', a.id);
+        b.setAttribute('aria-label', 'Choose ' + a.name);
+        b.innerHTML = '<span class="av-face">' + a.svg + '</span><span class="av-nm">' + a.name + '</span>';
+        host.appendChild(b);
+      });
+      function paintTag() { tagEl.innerHTML = pAvatar ? ('<b>' + BV.avatarName(pAvatar) + '</b>' + BV.avatarTag(pAvatar)) : 'Pick a character to represent you.'; }
+      host.addEventListener('click', function (e) {
+        var b = e.target.closest('.av-opt'); if (!b) return;
+        pAvatar = b.getAttribute('data-id');
+        [].forEach.call(host.children, function (c) { c.classList.toggle('on', c === b); });
+        paintTag();
+      });
+      paintTag();
+    })();
+    var avMsg = $('av-msg');
+    $('av-save').addEventListener('click', function () {
+      if (!pAvatar) { avMsg.className = 'form-msg show err'; avMsg.textContent = 'Pick an explorer first.'; return; }
+      var btn = this; btn.disabled = true; var t = btn.textContent; btn.textContent = 'Saving…';
+      BV.setAvatar(pAvatar).then(function () {
+        btn.disabled = false; btn.textContent = t;
+        $('avatar').innerHTML = BV.avatarSvg(pAvatar);
+        avMsg.className = 'form-msg show ok'; avMsg.textContent = 'Explorer saved.';
+      });
+    });
 
     // Change password (while logged in).
     var msg = $('pw-msg');

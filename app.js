@@ -52,6 +52,29 @@
   };
   var TOPIC_VIS_FALLBACK = { c: '#185FA5', b: '#E7EFF9', icon: _tvIcon('<path d="M12 2.8l7.5 4.3v9.8L12 21.2 4.5 16.9V7.1L12 2.8z"/><path d="M12 2.8v18.4M4.5 7.1L12 11.4l7.5-4.3"/>') };
 
+  // ---- Explorer avatars: a small set of characters (tarsier mascots + kid
+  // explorers) a student picks instead of a real photo. Pure inline SVG, so it
+  // works offline and never uploads an image. Each has an id, name and tagline. ----
+  var AVATARS = [
+    { id: 'tars-1', name: 'Tarsy', tag: 'Tiny eyes, giant curiosity.', svg: '<svg viewBox="0 0 48 48"><rect width="48" height="48" fill="#F1E4D3"/><circle cx="14" cy="15" r="5" fill="#9C6B44"/><circle cx="34" cy="15" r="5" fill="#9C6B44"/><circle cx="24" cy="26" r="15" fill="#B07C50"/><circle cx="18" cy="24" r="6.6" fill="#fff"/><circle cx="30" cy="24" r="6.6" fill="#fff"/><circle cx="18.4" cy="24.4" r="3.5" fill="#2A241F"/><circle cx="29.6" cy="24.4" r="3.5" fill="#2A241F"/><circle cx="19.5" cy="23.2" r="1.1" fill="#fff"/><circle cx="30.7" cy="23.2" r="1.1" fill="#fff"/><ellipse cx="24" cy="31.5" rx="2.2" ry="1.5" fill="#6E4A30"/></svg>' },
+    { id: 'tars-2', name: 'Nocturne', tag: 'Runs the night shift of science.', svg: '<svg viewBox="0 0 48 48"><rect width="48" height="48" fill="#E4E9EE"/><circle cx="14" cy="15" r="5" fill="#7F8992"/><circle cx="34" cy="15" r="5" fill="#7F8992"/><circle cx="24" cy="26" r="15" fill="#96A0A9"/><circle cx="18" cy="24" r="6.6" fill="#fff"/><circle cx="30" cy="24" r="6.6" fill="#fff"/><circle cx="18.4" cy="24.4" r="3.5" fill="#22303B"/><circle cx="29.6" cy="24.4" r="3.5" fill="#22303B"/><circle cx="19.5" cy="23.2" r="1.1" fill="#fff"/><circle cx="30.7" cy="23.2" r="1.1" fill="#fff"/><ellipse cx="24" cy="31.5" rx="2.2" ry="1.5" fill="#556069"/></svg>' },
+    { id: 'tars-3', name: 'Pip', tag: 'Small hands, big discoveries.', svg: '<svg viewBox="0 0 48 48"><rect width="48" height="48" fill="#FBEECB"/><circle cx="14" cy="15" r="5" fill="#C79A3F"/><circle cx="34" cy="15" r="5" fill="#C79A3F"/><circle cx="24" cy="26" r="15" fill="#D9AF52"/><circle cx="18" cy="24" r="6.6" fill="#fff"/><circle cx="30" cy="24" r="6.6" fill="#fff"/><circle cx="18.4" cy="24.4" r="3.5" fill="#3A2E17"/><circle cx="29.6" cy="24.4" r="3.5" fill="#3A2E17"/><circle cx="19.5" cy="23.2" r="1.1" fill="#fff"/><circle cx="30.7" cy="23.2" r="1.1" fill="#fff"/><ellipse cx="24" cy="31.5" rx="2.2" ry="1.5" fill="#836223"/></svg>' },
+    { id: 'kid-goggles', name: 'Iris', tag: 'Goggles down, science on.', svg: '<svg viewBox="0 0 48 48"><rect width="48" height="48" fill="#E6EEFB"/><path d="M11 25a13 12 0 0 1 26 0z" fill="#3C2A20"/><circle cx="24" cy="27" r="12.5" fill="#E3A06E"/><path d="M11.5 24a12.5 12.5 0 0 1 25 0 5 5 0 0 0-25 0z" fill="#3C2A20"/><rect x="14" y="22.5" width="20" height="7.5" rx="3.6" fill="#12A594" opacity=".92"/><circle cx="19.5" cy="26.2" r="2.4" fill="#0C1A2C"/><circle cx="28.5" cy="26.2" r="2.4" fill="#0C1A2C"/><circle cx="20.2" cy="25.5" r=".7" fill="#fff"/><circle cx="29.2" cy="25.5" r=".7" fill="#fff"/><path d="M20.5 33.5q3.5 2.6 7 0" stroke="#5A3A28" stroke-width="1.7" fill="none" stroke-linecap="round"/></svg>' },
+    { id: 'kid-hat', name: 'Ranger', tag: 'Field notes and muddy boots.', svg: '<svg viewBox="0 0 48 48"><rect width="48" height="48" fill="#E3F1E7"/><circle cx="24" cy="27" r="12.5" fill="#E8B98C"/><circle cx="19.5" cy="26" r="1.5" fill="#3A2A20"/><circle cx="28.5" cy="26" r="1.5" fill="#3A2A20"/><path d="M20 31.5q4 2.8 8 0" stroke="#5A3A28" stroke-width="1.7" fill="none" stroke-linecap="round"/><path d="M8 21h32" stroke="#7A5A2E" stroke-width="3.2" stroke-linecap="round"/><path d="M13 21a11 9 0 0 1 22 0z" fill="#9A7638"/><path d="M16 20.5h16" stroke="#7A5A2E" stroke-width="2.2" stroke-linecap="round"/></svg>' },
+    { id: 'kid-curly', name: 'Nova', tag: 'Bright ideas, brighter hair.', svg: '<svg viewBox="0 0 48 48"><rect width="48" height="48" fill="#F3E7F6"/><g fill="#241A16"><circle cx="14" cy="18" r="5"/><circle cx="20" cy="13.5" r="5"/><circle cx="28" cy="13.5" r="5"/><circle cx="34" cy="18" r="5"/><circle cx="24" cy="12" r="5"/></g><circle cx="24" cy="27" r="12.5" fill="#8A5A3C"/><path d="M11.5 24a12.5 12.5 0 0 1 25 0 6 6 0 0 0-25 0z" fill="#241A16"/><circle cx="19.5" cy="26" r="1.6" fill="#20140E"/><circle cx="28.5" cy="26" r="1.6" fill="#20140E"/><path d="M20 31.5q4 3 8 0" stroke="#3A241A" stroke-width="1.7" fill="none" stroke-linecap="round"/></svg>' },
+    { id: 'kid-scarf', name: 'Aya', tag: 'Asks why about everything.', svg: '<svg viewBox="0 0 48 48"><rect width="48" height="48" fill="#FBE9DE"/><path d="M24 9c-9 0-13 7-13 13 0 4 2 7 2 7l3-3c6 2 10 2 16 0l3 3s2-3 2-7c0-6-4-13-13-13z" fill="#E7734B"/><circle cx="24" cy="27" r="10.5" fill="#E1A57A"/><path d="M13.5 22a10.5 10.5 0 0 1 21 0z" fill="#E7734B"/><circle cx="20.2" cy="26.5" r="1.5" fill="#3A2A20"/><circle cx="27.8" cy="26.5" r="1.5" fill="#3A2A20"/><path d="M20.5 31q3.5 2.6 7 0" stroke="#5A3A28" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg>' },
+    { id: 'kid-glasses', name: 'Data', tag: 'Reads the universe\'s fine print.', svg: '<svg viewBox="0 0 48 48"><rect width="48" height="48" fill="#FDEFD6"/><path d="M11 26a13 13 0 0 1 26 0z" fill="#3A2416"/><circle cx="24" cy="27" r="12.5" fill="#F0C79B"/><path d="M11.5 25a12.5 12.5 0 0 1 25 0 6 6 0 0 0-25 0z" fill="#3A2416"/><g fill="none" stroke="#2A2018" stroke-width="1.7"><circle cx="19.5" cy="26.2" r="3.4"/><circle cx="28.5" cy="26.2" r="3.4"/><path d="M22.9 26.2h2.2M32 25.3l2.4-.6M16 25.3l-2.4-.6"/></g><circle cx="19.5" cy="26.2" r="1.3" fill="#2A2018"/><circle cx="28.5" cy="26.2" r="1.3" fill="#2A2018"/><path d="M20.5 32.5q3.5 2.4 7 0" stroke="#5A3A28" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg>' }
+  ];
+  var AVATAR_BY_ID = {}; AVATARS.forEach(function (a) { AVATAR_BY_ID[a.id] = a; });
+  // Best-effort write of the avatar id to the profile row. Never blocks or breaks
+  // sign-up/login: if the `avatar` column isn't in the DB yet, the error is ignored
+  // (the choice still lives in the local mirror and shows on this device).
+  function _saveAvatarRemote(uid, id) {
+    var c = sb();
+    if (!c || !uid || !id) return Promise.resolve();
+    return c.from('profiles').update({ avatar: id }).eq('id', uid).then(function () {}, function () {});
+  }
+
   window.BV = {
     getProfile: function () {
       try { return JSON.parse(localStorage.getItem(KEY) || 'null'); }
@@ -72,7 +95,7 @@
     // ---- Accounts: username + password. Real name is PRIVATE (teacher-only). ----
     // Create a student account, then store the profile (alias + real name + class).
     // Resolves { ok:true } or { ok:false, error:<message> }.
-    signUp: function (fullName, username, password, classCode) {
+    signUp: function (fullName, username, password, classCode, avatar) {
       var c = sb();
       if (!c) return Promise.resolve({ ok: false, error: 'No connection — try again when you are online.' });
       var self = this;
@@ -83,8 +106,9 @@
         return self._upsertProfile(uid, { alias: username, full_name: fullName, class_code: classCode, role: 'student' })
           .then(function (up) {
             if (up && up.error) return { ok: false, error: 'Account made, but saving your details failed. Tell your teacher.' };
-            self._writeMirror({ alias: username, classCode: classCode, fullName: fullName, role: 'student' });
-            return { ok: true };
+            self._writeMirror({ alias: username, classCode: classCode, fullName: fullName, role: 'student', avatar: avatar || '' });
+            // Avatar is saved best-effort (separate write) so it never blocks sign-up.
+            return _saveAvatarRemote(uid, avatar).then(function () { return { ok: true }; });
           });
       }).catch(function () { return { ok: false, error: 'Something went wrong creating the account.' }; });
     },
@@ -98,8 +122,15 @@
         return c.from('profiles').select('alias,class_code,full_name,role').eq('id', uid).maybeSingle().then(function (pr) {
           var row = (pr && pr.data) || {};
           var role = row.role || 'student';
-          self._writeMirror({ alias: row.alias || username, classCode: row.class_code || '', fullName: row.full_name || '', role: role });
-          return { ok: true, role: role };
+          var mirror = { alias: row.alias || username, classCode: row.class_code || '', fullName: row.full_name || '', role: role };
+          // Pull the avatar in a separate query so a not-yet-migrated `avatar`
+          // column can't break login; fold it in, then finish.
+          return c.from('profiles').select('avatar').eq('id', uid).maybeSingle().then(function (av) {
+            if (av && av.data && av.data.avatar) mirror.avatar = av.data.avatar;
+          }, function () {}).then(function () {
+            self._writeMirror(mirror);
+            return { ok: true, role: role };
+          });
         });
       }).catch(function () { return { ok: false, error: 'Something went wrong signing in.' }; });
     },
@@ -340,6 +371,21 @@
     // Per-topic icon + colour (see TOPIC_VIS above). Returns { c, b, icon };
     // falls back to a neutral cube for any unknown id.
     topicVisual: function (id) { return TOPIC_VIS[id] || TOPIC_VIS_FALLBACK; },
+
+    // ---- Explorer avatars ----
+    avatars: function () { return AVATARS; },
+    avatarSvg: function (id) { var a = AVATAR_BY_ID[id]; return a ? a.svg : ''; },
+    avatarName: function (id) { var a = AVATAR_BY_ID[id]; return a ? a.name : ''; },
+    avatarTag: function (id) { var a = AVATAR_BY_ID[id]; return a ? a.tag : ''; },
+    defaultAvatar: function () { return AVATARS[0].id; },
+    // Change the logged-in student's avatar: mirror first (instant UI), then a
+    // best-effort DB write. Always resolves ok — a failed sync is non-fatal.
+    setAvatar: function (id) {
+      var prof = this.getProfile() || {};
+      prof.avatar = id; this._writeMirror(prof);
+      return currentUid().then(function (uid) { return _saveAvatarRemote(uid, id); })
+        .then(function () { return { ok: true }; }, function () { return { ok: true }; });
+    },
 
     // Injects the shared bottom navigation into <nav id="bottomnav"> and marks the active tab.
     renderNav: function (active) {
