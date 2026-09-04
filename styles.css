@@ -710,3 +710,21 @@ form.acct-card .btn { margin-top: 2px; }
 .troster-av { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; background: #e6eef7; flex: 0 0 auto; }
 .troster-av > svg { width: 100%; height: 100%; display: block; }
 .troster-av-letter { display: grid; place-items: center; font-weight: 800; font-size: 16px; color: #fff; background: var(--primary); }
+
+/* ---- Dashboard momentum: points + badges summary ------------------------- */
+.home-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; margin-bottom: 18px; }
+.hstat { display: flex; align-items: center; gap: 10px; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 11px 13px; box-shadow: var(--shadow); }
+.hstat-ic { width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; flex: 0 0 auto; }
+.hstat-ic svg { width: 19px; height: 19px; }
+.hstat-ic.pts { background: var(--accent-tint); color: var(--accent); }
+.hstat-ic.bdg { background: var(--primary-tint); color: var(--primary); }
+.hstat-t b { display: block; font-size: 17px; font-weight: 800; line-height: 1; }
+.hstat-t small { font-size: 11.5px; color: var(--muted); }
+
+/* ---- "AR coming soon" teasers (dashboard tag + topic-hub action) ---------- */
+.topic-note.soon { display: inline-flex; align-items: center; gap: 4px; background: var(--accent-tint); color: var(--accent); font-weight: 700; padding: 3px 9px; border-radius: 999px; margin-top: 6px; }
+.topic-note.soon svg { width: 12px; height: 12px; }
+.action.disabled.soon { background: var(--accent-tint); border-style: solid; border-color: transparent; box-shadow: var(--shadow); }
+.action.disabled.soon .action-ic { background: #fff; color: var(--accent); }
+.action.disabled.soon .action-title { color: var(--ink); }
+.soon-pill { font-size: 11px; font-weight: 800; color: var(--accent); background: #fff; border: 1px solid var(--accent); border-radius: 999px; padding: 3px 10px; }

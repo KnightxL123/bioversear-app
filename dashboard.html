@@ -25,12 +25,22 @@
         <div class="tagline">Keep learning, keep exploring!</div>
       </div>
       <div class="home-chips">
-        <span class="chip-stat" id="badge-chip" title="Badges earned"></span>
         <a class="iconbtn" href="leaderboard.html" aria-label="Leaderboard" title="Leaderboard">
           <svg viewBox="0 0 24 24" fill="none"><path d="M8 4h8v4a4 4 0 01-8 0V4z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M8 5H5v2a3 3 0 003 3M16 5h3v2a3 3 0 01-3 3M9 20h6M12 12v4M9.5 20v-1a2.5 2.5 0 015 0v1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </a>
       </div>
     </header>
+
+    <div class="home-stats">
+      <div class="hstat">
+        <span class="hstat-ic pts"><svg viewBox="0 0 24 24"><path d="M12 3l2.6 5.5 6 .7-4.4 4.1 1.2 5.9L12 16.9 6.6 19.2l1.2-5.9L3.4 9.2l6-.7z" fill="currentColor"/></svg></span>
+        <span class="hstat-t"><b id="stat-points">0</b><small>points</small></span>
+      </div>
+      <div class="hstat">
+        <span class="hstat-ic bdg"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="9" r="5.2" stroke="currentColor" stroke-width="1.6"/><path d="M9 13.5L7.5 21l4.5-2.6L16.5 21 15 13.5" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg></span>
+        <span class="hstat-t"><b id="stat-badges">0/7</b><small>badges</small></span>
+      </div>
+    </div>
 
     <a class="continue" id="continue-card" hidden></a>
 
@@ -64,7 +74,8 @@
     var headAv = profile.avatar && BV.avatarSvg(profile.avatar);
     if (headAv && logoEl) { logoEl.classList.add('is-avatar'); logoEl.innerHTML = headAv; }
     var stats = BV.overallStats();
-    $('badge-chip').innerHTML = ICON.medal + '<span>' + stats.badges + '/' + stats.total + '</span>';
+    $('stat-points').textContent = stats.points;
+    $('stat-badges').textContent = stats.badges + '/' + stats.total;
 
     var topics = window.TOPICS || [], byId = {};
     topics.forEach(function (t) { byId[t.id] = t; });
@@ -95,7 +106,7 @@
       if (t.ready) {
         var pr = BV.topicProgress(t.id);
         var vis = BV.topicVisual(t.id);
-        var arNote = t.model ? '' : '<div class="topic-note">Quiz ready · 3D model coming soon</div>';
+        var arNote = t.model ? '' : '<div class="topic-note soon"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3l2.6 5.5 6 .7-4.4 4.1 1.2 5.9L12 16.9 6.6 19.2l1.2-5.9L3.4 9.2l6-.7z" fill="currentColor"/></svg>AR world coming soon</div>';
         var progBar = pr.attempted ? '<div class="topic-prog"><i style="width:' + pr.pct + '%;background:' + vis.c + '"></i></div>' : '';
         var go = pr.attempted
           ? '<div class="go" style="font-size:13px;font-weight:800;color:' + vis.c + '">' + pr.pct + '%</div>'

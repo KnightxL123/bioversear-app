@@ -94,11 +94,12 @@
     if (t.model) {
       arLink.href = 'ar.html?topic=' + encodeURIComponent(t.id);
     } else {
-      arLink.classList.add('disabled');
+      arLink.classList.add('disabled', 'soon');
       arLink.setAttribute('aria-disabled', 'true');
       arLink.removeAttribute('href');
-      arLink.querySelector('.action-sub').textContent = '3D model coming soon';
-      arLink.querySelector('.action-go').textContent = '';
+      arLink.querySelector('.action-title').textContent = 'AR world coming soon';
+      arLink.querySelector('.action-sub').textContent = 'A 3D model is on the way — take the quiz below to earn this badge!';
+      arLink.querySelector('.action-go').innerHTML = '<span class="soon-pill">Soon</span>';
       arLink.addEventListener('click', function (e) { e.preventDefault(); });
     }
     // Difficulty picker: link each card to the quiz and show the best result so far.
