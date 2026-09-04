@@ -75,9 +75,14 @@
     document.title = 'BioVerseAR — ' + t.name;
     document.getElementById('topic-name').textContent = t.name;
 
-    // badge
+    // badge — show the topic's own emblem (its icon in its colour when earned,
+    // greyed while locked), matching the Badges shelf.
     document.getElementById('badge-name').textContent = t.badge;
     var earned = BV.hasBadge(t.id);
+    var vis = BV.topicVisual(t.id);
+    var medal = document.getElementById('badge-medal');
+    medal.innerHTML = vis.icon;
+    if (earned) { medal.style.background = vis.b; medal.style.color = vis.c; }
     var card = document.getElementById('badge-card');
     card.classList.toggle('earned', earned);
     document.getElementById('badge-state').textContent = earned

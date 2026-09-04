@@ -32,8 +32,8 @@
   (function () {
     'use strict';
     if (!BV.requireAuth()) return;
-    var MEDAL = '<svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="9" r="5.2" stroke="currentColor" stroke-width="1.6"/><path d="M9 13.5L7.5 21l4.5-2.6L16.5 21 15 13.5" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>';
     var LOCK = '<svg viewBox="0 0 24 24" fill="none"><rect x="5" y="10.5" width="14" height="9.5" rx="2" stroke="currentColor" stroke-width="1.7"/><path d="M8 10.5V8a4 4 0 018 0v2.5" stroke="currentColor" stroke-width="1.7"/></svg>';
+    var CHECK = '<svg viewBox="0 0 24 24" fill="none"><path d="M5 12l4 4 10-10" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 
     var topics = window.TOPICS || [];
     var stats = BV.overallStats();
@@ -42,13 +42,22 @@
     var grid = document.getElementById('badge-grid');
     topics.forEach(function (t) {
       var earned = BV.hasBadge(t.id);
+      var vis = BV.topicVisual(t.id);
       var cell = document.createElement('div');
-      cell.className = 'badge-cell' + (earned ? '' : ' locked');
+      cell.className = 'badge-cell' + (earned ? ' earned' : ' locked');
+      // Earned = the topic's own icon in its colour, with a gold check; locked =
+      // the same icon greyed out with a small lock, so you can see what's next.
+      var disc = earned
+        ? '<div class="badge-disc earned" style="background:' + vis.b + ';color:' + vis.c + '">' + vis.icon + '</div>'
+        : '<div class="badge-disc">' + vis.icon + '</div>';
+      var corner = earned
+        ? '<span class="badge-ribbon">' + CHECK + '</span>'
+        : '<span class="badge-lock">' + LOCK + '</span>';
       cell.innerHTML =
-        '<div class="badge-disc">' + (earned ? MEDAL : LOCK) + '</div>' +
+        corner + disc +
         '<div class="bname">' + BV.escape(t.badge) + '</div>' +
         '<div class="btopic">' + BV.escape(t.name) + '</div>' +
-        '<div class="bstate ' + (earned ? 'earned' : 'locked') + '">' + (earned ? '★ Earned' : 'Locked') + '</div>';
+        '<div class="bstate ' + (earned ? 'earned' : 'locked') + '"' + (earned ? ' style="color:' + vis.c + '"' : '') + '>' + (earned ? '★ Earned' : 'Locked') + '</div>';
       grid.appendChild(cell);
     });
 
