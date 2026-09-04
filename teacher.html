@@ -100,7 +100,12 @@
     function rosterRow(s) {
       var row = document.createElement('div');
       row.className = 'troster';
+      var avSvg = s.avatar && BV.avatarSvg(s.avatar);
+      var avCell = avSvg
+        ? '<div class="troster-av">' + avSvg + '</div>'
+        : '<div class="troster-av troster-av-letter">' + (((s.alias || '?').trim()[0] || '?').toUpperCase()) + '</div>';
       row.innerHTML =
+        avCell +
         '<div class="troster-main"><div class="troster-name">' + BV.escape(s.full_name || '(no name)') + '</div>' +
         '<div class="troster-sub">@' + BV.escape(s.alias) + ' · ' + s.score + ' pts · ' + s.badges + ' badge' + (s.badges == 1 ? '' : 's') + '</div></div>' +
         '<button class="btn secondary troster-reset" type="button">Reset password</button>' +

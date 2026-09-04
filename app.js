@@ -303,7 +303,7 @@
         return c.rpc('get_leaderboard').then(function (r) {
           if (r.error || !r.data) return self.leaderboard();
           return r.data.map(function (row) {
-            return { alias: row.alias, classCode: row.class_code, score: Number(row.score) || 0, badges: Number(row.badges) || 0 };
+            return { alias: row.alias, classCode: row.class_code, score: Number(row.score) || 0, badges: Number(row.badges) || 0, avatar: row.avatar || '' };
           });
         });
       }).catch(function () { return self.leaderboard(); });
@@ -319,7 +319,7 @@
           if (r.error || !r.data) return null;
           return r.data.map(function (row) {
             return { alias: row.alias, classCode: row.class_code, topicId: row.topic_id,
-                     score: Number(row.score) || 0, passed: !!row.passed };
+                     score: Number(row.score) || 0, passed: !!row.passed, avatar: row.avatar || '' };
           });
         });
       }).catch(function () { return null; });
