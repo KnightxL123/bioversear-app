@@ -729,16 +729,20 @@ form.acct-card .btn { margin-top: 2px; }
 .action.disabled.soon .action-title { color: var(--ink); }
 .soon-pill { font-size: 11px; font-weight: 800; color: var(--accent); background: #fff; border: 1px solid var(--accent); border-radius: 999px; padding: 3px 10px; }
 
-/* ---- First-run onboarding ------------------------------------------------ */
-.onboard { position: fixed; inset: 0; z-index: 200; background: rgba(4,44,83,.55); display: grid; place-items: center; padding: 20px; }
-.onboard[hidden] { display: none !important; }
-.onboard-card { background: var(--surface); border-radius: 20px; padding: 28px 22px 20px; width: 100%; max-width: 360px; text-align: center; box-shadow: 0 24px 54px -14px rgba(4,44,83,.5); }
-.ob-ic { width: 78px; height: 78px; border-radius: 22px; margin: 2px auto 18px; display: grid; place-items: center; }
-.ob-ic svg { width: 42px; height: 42px; }
-.ob-title { font-size: 20px; font-weight: 800; letter-spacing: -.01em; margin: 0 0 8px; }
-.ob-text { font-size: 14px; color: var(--muted); line-height: 1.5; margin: 0 auto 20px; max-width: 30ch; }
-.onboard-dots { display: flex; justify-content: center; gap: 7px; margin-bottom: 18px; }
-.onboard-dots i { width: 7px; height: 7px; border-radius: 99px; background: var(--line); transition: width .2s ease, background .2s ease; }
-.onboard-dots i.on { background: var(--primary); width: 20px; }
-.ob-skip { display: block; margin: 10px auto 0; background: none; border: 0; color: var(--muted); font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; }
-@media (prefers-reduced-motion: reduce) { .onboard-dots i { transition: none; } }
+/* ---- Guided coach-mark tour (spotlight + tooltip, reusable) --------------- */
+.cm-ov { position: fixed; inset: 0; z-index: 300; }
+.cm-ov.cm-dim { background: rgba(4,44,83,.62); }
+.cm-hole { position: fixed; border-radius: 12px; box-shadow: 0 0 0 9999px rgba(4,44,83,.62); pointer-events: none; transition: left .22s ease, top .22s ease, width .22s ease, height .22s ease; }
+.cm-pop { position: fixed; width: min(320px, calc(100vw - 24px)); background: var(--surface); border-radius: 16px; box-shadow: 0 22px 52px -14px rgba(4,44,83,.5); padding: 16px 16px 13px; z-index: 301; }
+.cm-title { font-size: 16px; font-weight: 800; letter-spacing: -.01em; margin-bottom: 5px; padding-right: 40px; }
+.cm-text { font-size: 13.5px; color: var(--muted); line-height: 1.5; }
+.cm-foot { display: flex; align-items: center; justify-content: space-between; margin-top: 14px; }
+.cm-dots { display: flex; gap: 6px; }
+.cm-dots i { width: 6px; height: 6px; border-radius: 99px; background: var(--line); }
+.cm-dots i.on { background: var(--primary); width: 16px; }
+.cm-btns { display: flex; gap: 8px; }
+.cm-back, .cm-next { font: inherit; font-size: 13px; font-weight: 700; border-radius: 999px; padding: 8px 15px; cursor: pointer; border: 0; }
+.cm-back { background: var(--surface-2); color: var(--muted); }
+.cm-next { background: var(--primary); color: #fff; }
+.cm-skip { position: absolute; top: 12px; right: 13px; background: none; border: 0; color: var(--muted); font: inherit; font-size: 12px; font-weight: 600; cursor: pointer; }
+@media (prefers-reduced-motion: reduce) { .cm-hole { transition: none; } }

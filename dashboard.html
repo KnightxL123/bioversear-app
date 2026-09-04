@@ -25,6 +25,9 @@
         <div class="tagline">Keep learning, keep exploring!</div>
       </div>
       <div class="home-chips">
+        <button class="iconbtn" id="help-btn" type="button" aria-label="How this works" title="How this works">
+          <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.6"/><path d="M9.6 9.3a2.5 2.5 0 1 1 3.3 2.4c-.7.3-1.4.9-1.4 1.8v.4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="16.7" r="0.7" fill="currentColor"/></svg>
+        </button>
         <a class="iconbtn" href="leaderboard.html" aria-label="Leaderboard" title="Leaderboard">
           <svg viewBox="0 0 24 24" fill="none"><path d="M8 4h8v4a4 4 0 01-8 0V4z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M8 5H5v2a3 3 0 003 3M16 5h3v2a3 3 0 01-3 3M9 20h6M12 12v4M9.5 20v-1a2.5 2.5 0 015 0v1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </a>
@@ -51,18 +54,6 @@
   </div>
 
   <nav id="bottomnav"></nav>
-
-  <!-- First-run intro (shown once per device) -->
-  <div class="onboard" id="onboard" role="dialog" aria-modal="true" aria-label="Welcome to BioVerseAR" hidden>
-    <div class="onboard-card">
-      <div class="ob-ic" id="ob-ic"></div>
-      <h2 class="ob-title" id="ob-title"></h2>
-      <p class="ob-text" id="ob-text"></p>
-      <div class="onboard-dots" id="ob-dots"></div>
-      <button class="btn" id="ob-next" type="button">Next</button>
-      <button class="ob-skip" id="ob-skip" type="button">Skip intro</button>
-    </div>
-  </div>
 
   <script src="topics.js"></script>
   <script src="app.js"></script>
@@ -140,31 +131,16 @@
 
     BV.renderNav('home');
 
-    // ---- First-run intro: 3 quick cards, shown once per device ----
-    (function onboarding() {
-      var OB_KEY = 'bioversear.onboarded.v1';
-      try { if (localStorage.getItem(OB_KEY)) return; } catch (e) { return; }
-      var ATOM = '<svg viewBox="0 0 24 24" fill="none"><g stroke="currentColor" stroke-width="1.7"><ellipse cx="12" cy="12" rx="10" ry="3.8"/><ellipse cx="12" cy="12" rx="10" ry="3.8" transform="rotate(60 12 12)"/><ellipse cx="12" cy="12" rx="10" ry="3.8" transform="rotate(120 12 12)"/></g><circle cx="12" cy="12" r="2.2" fill="currentColor"/></svg>';
-      var BOLT = '<svg viewBox="0 0 24 24"><path d="M13 2.5L6 13h4.3l-1.1 8.5L18 10.2h-4.7z" fill="currentColor"/></svg>';
-      var MEDAL2 = '<svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="9" r="5.2" stroke="currentColor" stroke-width="1.7"/><path d="M9 13.5L7.5 21l4.5-2.6L16.5 21 15 13.5" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>';
-      var slides = [
-        { bg: 'var(--primary-tint)', c: 'var(--primary)', icon: ATOM, title: 'Explore science worlds', text: 'Seven topics, each with its own quiz — and an AR model to explore in 3D (more on the way).' },
-        { bg: 'var(--accent-tint)', c: 'var(--accent)', icon: BOLT, title: 'Answer & earn points', text: 'Pick Easy, Medium or Hard. Every correct answer earns points — no penalty for trying.' },
-        { bg: '#E3F4E8', c: '#2CA457', icon: MEDAL2, title: 'Collect badges & climb', text: 'Pass any level of a topic to earn its badge, then see how you rank on your class leaderboard.' }
-      ];
-      var i = 0, ov = $('onboard');
-      function render() {
-        var s = slides[i], ic = $('ob-ic');
-        ic.style.background = s.bg; ic.style.color = s.c; ic.innerHTML = s.icon;
-        $('ob-title').textContent = s.title; $('ob-text').textContent = s.text;
-        $('ob-dots').innerHTML = slides.map(function (_, j) { return '<i class="' + (j === i ? 'on' : '') + '"></i>'; }).join('');
-        $('ob-next').textContent = (i === slides.length - 1) ? "Let's explore!" : 'Next';
-      }
-      function finish() { try { localStorage.setItem(OB_KEY, '1'); } catch (e) {} ov.hidden = true; }
-      $('ob-next').addEventListener('click', function () { if (i < slides.length - 1) { i++; render(); } else finish(); });
-      $('ob-skip').addEventListener('click', finish);
-      render(); ov.hidden = false;
-    })();
+    // ---- Guided tour of the home screen (auto on first visit; replay via "?") ----
+    var HOME_TOUR = [
+      { target: null, title: 'Welcome to BioVerseAR!', text: 'Here’s a quick tour of your home base — tap Next to walk through it.' },
+      { target: '.home-stats', title: 'Your progress', text: 'The points and badges you earn show up here and grow as you play.' },
+      { target: '#topics .topic', title: 'Explore a topic', text: 'Tap any topic to view it in AR and take its quiz. Each one has its own badge to earn.' },
+      { target: '#bottomnav', title: 'Find your way', text: 'Jump to your Badges, the Leaderboard, or your Profile from down here anytime.' },
+      { target: '#help-btn', title: 'Need this again?', text: 'Tap the “?” any time to replay this tour. Have fun exploring!' }
+    ];
+    BV.tourOnce(HOME_TOUR, 'bioversear.tour.home.v1');
+    $('help-btn').addEventListener('click', function () { BV.tour(HOME_TOUR, null); });
   })();
   </script>
 </body>

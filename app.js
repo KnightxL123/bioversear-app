@@ -387,6 +387,80 @@
         .then(function () { return { ok: true }; }, function () { return { ok: true }; });
     },
 
+    // ---- Guided coach-mark tour: spotlights a real element and floats a
+    // tooltip beside it, stepping through with Back / Next / Skip. Reusable on
+    // any screen — each screen passes its own steps. `steps` is an array of
+    // { target: cssSelector|null, title, text }; a null target = centered step
+    // (no spotlight). `key` marks completion in localStorage (pass null to
+    // always run, e.g. from a "?" replay button). No dependencies. ----
+    tour: function (steps, key) {
+      steps = (steps || []).filter(function (s) { return !s.target || document.querySelector(s.target); });
+      if (!steps.length) return;
+      var ov = document.createElement('div');
+      ov.className = 'cm-ov';
+      ov.innerHTML =
+        '<div class="cm-hole" id="cm-hole"></div>' +
+        '<div class="cm-pop" id="cm-pop" role="dialog" aria-modal="true" aria-live="polite">' +
+          '<button class="cm-skip" id="cm-skip" type="button">Skip</button>' +
+          '<div class="cm-title" id="cm-title"></div>' +
+          '<div class="cm-text" id="cm-text"></div>' +
+          '<div class="cm-foot"><div class="cm-dots" id="cm-dots"></div>' +
+          '<div class="cm-btns"><button class="cm-back" id="cm-back" type="button">Back</button>' +
+          '<button class="cm-next" id="cm-next" type="button">Next</button></div></div>' +
+        '</div>';
+      document.body.appendChild(ov);
+      var prevOverflow = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      var i = 0;
+      var g = function (id) { return document.getElementById(id); };
+      var hole = g('cm-hole'), pop = g('cm-pop');
+      function place(el) {
+        ov.classList.toggle('cm-dim', !el);
+        if (!el) {
+          hole.style.display = 'none';
+          pop.style.left = '50%'; pop.style.top = '50%'; pop.style.transform = 'translate(-50%,-50%)';
+          return;
+        }
+        el.scrollIntoView({ block: 'center', inline: 'nearest' });
+        var r = el.getBoundingClientRect(), pad = 6;
+        hole.style.display = 'block';
+        hole.style.left = (r.left - pad) + 'px'; hole.style.top = (r.top - pad) + 'px';
+        hole.style.width = (r.width + pad * 2) + 'px'; hole.style.height = (r.height + pad * 2) + 'px';
+        pop.style.transform = 'none';
+        var vw = window.innerWidth, vh = window.innerHeight;
+        var popH = pop.offsetHeight || 150, popW = pop.offsetWidth || 300;
+        var top = (r.bottom + 12 + popH < vh) ? (r.bottom + 12) : Math.max(12, r.top - 12 - popH);
+        pop.style.top = top + 'px';
+        pop.style.left = Math.min(Math.max(12, r.left + r.width / 2 - popW / 2), vw - popW - 12) + 'px';
+      }
+      function render() {
+        var s = steps[i];
+        g('cm-title').textContent = s.title || '';
+        g('cm-text').textContent = s.text || '';
+        g('cm-dots').innerHTML = steps.map(function (_, j) { return '<i class="' + (j === i ? 'on' : '') + '"></i>'; }).join('');
+        g('cm-back').style.visibility = i === 0 ? 'hidden' : 'visible';
+        g('cm-next').textContent = i === steps.length - 1 ? 'Got it!' : 'Next';
+        place(s.target ? document.querySelector(s.target) : null);
+      }
+      function finish() {
+        if (key) { try { localStorage.setItem(key, '1'); } catch (e) {} }
+        document.body.style.overflow = prevOverflow;
+        window.removeEventListener('resize', render);
+        if (ov.parentNode) ov.parentNode.removeChild(ov);
+      }
+      g('cm-next').addEventListener('click', function () { if (i < steps.length - 1) { i++; render(); } else finish(); });
+      g('cm-back').addEventListener('click', function () { if (i > 0) { i--; render(); } });
+      g('cm-skip').addEventListener('click', finish);
+      window.addEventListener('resize', render);
+      render();
+    },
+    // Run a tour only the first time (per `key`), after layout settles.
+    tourOnce: function (steps, key) {
+      try { if (localStorage.getItem(key)) return; } catch (e) { return; }
+      var self = this;
+      setTimeout(function () { self.tour(steps, key); }, 90);
+    },
+
     // Injects the shared bottom navigation into <nav id="bottomnav"> and marks the active tab.
     renderNav: function (active) {
       var nav = document.getElementById('bottomnav'); if (!nav) return;
