@@ -119,6 +119,7 @@
     var mv = document.getElementById('mv');
     var status = document.getElementById('status');
     mv.setAttribute('alt', t.name + ' 3D model');
+    if (t.space) mv.classList.add('space'); // galaxy backdrop for space topics
     mv.src = t.model;
     mv.addEventListener('load', function () { status.textContent = 'Model ready. Tap a marker or card to focus a part.'; });
     mv.addEventListener('error', function () { status.textContent = 'Couldn’t load this model. Try again online once, then retry.'; });

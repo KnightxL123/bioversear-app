@@ -3,7 +3,7 @@
 // Cells model so the whole app (and its in-page 3D render) works with no network.
 // NOTE: the Scene Viewer AR handoff is a separate Android app and does NOT read this
 // cache; it caches the model itself after the topic is opened online once.
-const CACHE_NAME = 'bioversear-app-v50';
+const CACHE_NAME = 'bioversear-app-v51';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -42,7 +42,8 @@ const ASSETS_TO_CACHE = [
   './assets/models/animal_cell.glb',
   './assets/models/animal_cell_labeled.glb',
   './assets/models/human_cell.glb',
-  './assets/models/solar_system.glb'
+  './assets/models/solar_system.glb',
+  './assets/space-stars.svg'
 ];
 
 self.addEventListener('install', function (event) {
