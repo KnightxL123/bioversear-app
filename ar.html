@@ -122,6 +122,9 @@
     mv.setAttribute('alt', t.name + ' 3D model');
     if (t.space) mv.classList.add('space'); // galaxy backdrop for space topics
     mv.src = t.model;
+    // iOS Quick Look drops animations from the auto-generated USDZ; if a topic
+    // provides a hand-made animated .usdz, use it so iPhone placed-AR animates too.
+    if (t.iosSrc) mv.setAttribute('ios-src', t.iosSrc);
     mv.addEventListener('load', function () { status.textContent = 'Model ready. Tap a marker or card to focus a part.'; });
     mv.addEventListener('error', function () { status.textContent = 'Couldn’t load this model. Try again online once, then retry.'; });
 
