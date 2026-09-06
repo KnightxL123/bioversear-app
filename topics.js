@@ -84,6 +84,10 @@ window.TOPICS = [
       { id: 9, title: 'Neptune', position: '-0.16226 0.00351 0.14341',  normal: '0.80275 -0.30780 -0.51073', body: "The farthest planet from the Sun — a cold, windy ice giant with the fastest winds in the solar system." }
     ] },
   { id: 'matter',       name: 'Matter',                 badge: 'Particle Picker', phase: 2, ready: true, model: null },
-  { id: 'force-motion', name: 'Force & Motion',         badge: 'Friction Fighter',phase: 2, ready: true, model: 'assets/models/pendulum.glb' },
+  { id: 'force-motion', name: 'Force & Motion',         badge: 'Friction Fighter',phase: 2, ready: true, model: 'assets/models/pendulum.glb', animate: true },
+  // `animate: true` = auto-play the model's animation in the AR view. Leave it off
+  // for models whose labels must stay locked to parts (e.g. the solar-system orrery,
+  // whose planets orbit) — those load paused so hotspots sit on the right part, and a
+  // Play/Pause control lets students watch the motion when they want.
   { id: 'energy',       name: 'Energy',                 badge: 'Spark Starter',   phase: 2, ready: true, model: null }
 ];

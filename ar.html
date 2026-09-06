@@ -74,6 +74,10 @@
         <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="12" r="2.5" fill="currentColor"/></svg>
         <span>Reset</span>
       </button>
+      <button class="tool" data-act="playpause" id="pp-btn" type="button" hidden>
+        <svg viewBox="0 0 24 24" fill="none"><path d="M7 5l12 7-12 7V5z" fill="currentColor"/></svg>
+        <span>Play</span>
+      </button>
     </div>
 
     <p class="ar-note">Tap a numbered dot or a card to focus that part. Tap <strong>View in AR</strong> to place the cell in your room (labels show here in the 3D view).</p>
@@ -125,7 +129,42 @@
     // iOS Quick Look drops animations from the auto-generated USDZ; if a topic
     // provides a hand-made animated .usdz, use it so iPhone placed-AR animates too.
     if (t.iosSrc) mv.setAttribute('ios-src', t.iosSrc);
-    mv.addEventListener('load', function () { status.textContent = 'Model ready. Tap a marker or card to focus a part.'; });
+    // ---- Play/Pause for animated models ----
+    // model-viewer hotspots are pinned to fixed 3D points, so they can't follow a
+    // moving mesh. Topics with orbiting/moving parts (no `animate` flag) load PAUSED at
+    // frame 0 so labels sit on the right part; `animate` topics (e.g. the pendulum,
+    // where motion is the point) auto-play. The button lets students watch either way.
+    var ppBtn = document.getElementById('pp-btn');
+    var PP_PLAY  = '<svg viewBox="0 0 24 24" fill="none"><path d="M7 5l12 7-12 7V5z" fill="currentColor"/></svg><span>Play</span>';
+    var PP_PAUSE = '<svg viewBox="0 0 24 24" fill="none"><path d="M8 5h3v14H8zM13 5h3v14h-3z" fill="currentColor"/></svg><span>Pause</span>';
+    function hasAnim() { return mv.availableAnimations && mv.availableAnimations.length > 0; }
+    // Track intended state ourselves — mv.paused updates async after play()/pause(),
+    // so reading it back right after toggling is unreliable.
+    var playing = false;
+    function applyPlay(p) {
+      playing = p;
+      try { if (p) mv.play(); else mv.pause(); } catch (e) {}
+      ppBtn.innerHTML = p ? PP_PAUSE : PP_PLAY;
+      ppBtn.classList.toggle('on', p);
+    }
+    function pauseAtStart() { applyPlay(false); try { mv.currentTime = 0; } catch (e) {} }
+
+    // `autoplay` (on the element) initialises the animation mixer — model-viewer 1.6.3
+    // won't expose availableAnimations without it. So it starts playing, then for
+    // non-`animate` topics we pause back to frame 0 so hotspots line up on their part.
+    var animReady = false;
+    function setupAnim() {
+      if (animReady || !hasAnim()) return animReady;
+      animReady = true;
+      ppBtn.hidden = false;
+      if (t.animate) applyPlay(true); else pauseAtStart();
+      return true;
+    }
+    mv.addEventListener('load', function () {
+      status.textContent = 'Model ready. Tap a marker or card to focus a part.';
+      // availableAnimations can lag the load event by a few seconds — keep checking.
+      if (!setupAnim()) { var n = 0, iv = setInterval(function () { if (setupAnim() || ++n > 40) clearInterval(iv); }, 200); }
+    });
     mv.addEventListener('error', function () { status.textContent = 'Couldn’t load this model. Try again online once, then retry.'; });
 
     var annos = t.annotations || [];
@@ -291,7 +330,12 @@
       else if (act === 'pan') { b.classList.toggle('on'); status.textContent = 'Tip: drag with two fingers to pan the model.'; }
       else if (act === 'zoomin') setRadius(0.72);
       else if (act === 'zoomout') setRadius(1.4);
-      else if (act === 'reset') { mv.removeAttribute('auto-rotate'); close(); }
+      else if (act === 'playpause') { applyPlay(!playing); }
+      else if (act === 'reset') {
+        mv.removeAttribute('auto-rotate'); close();
+        // return an animated model to its labelled rest pose (labels lock back on)
+        if (hasAnim() && !t.animate) pauseAtStart();
+      }
     });
 
     // Attribution (CC-BY)
