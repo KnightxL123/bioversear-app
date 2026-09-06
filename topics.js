@@ -57,7 +57,19 @@ window.TOPICS = [
       { id: 9,  title: 'Centrosome',                  position: '0.03457 -0.01128 0.11908',   normal: '0.04447 -0.26579 0.96300',   body: "Helps organise the cell and pulls chromosomes apart when the cell divides." },
       { id: 10, title: 'Ribosomes',                   position: '-0.00153 -0.00303 0.14287',  normal: '-0.51382 0.55702 0.65247',   body: "Tiny factories that read the DNA's instructions and assemble proteins." }
     ] },
-  { id: 'life-sciences',name: 'Life Sciences',          badge: 'Eco-Explorer',    phase: 2, ready: true, model: 'assets/models/plant_cell.glb' },
+  { id: 'life-sciences', name: 'Life Sciences', badge: 'Eco-Explorer', phase: 2, ready: true, model: 'assets/models/plant_cell.glb',
+    // Pins placed via annotate.html. Bodies are drafts — teacher to review/replace.
+    annotations: [
+      { id: 1, title: 'Chloroplast',                 position: '0.02451 -0.00968 -0.17203', normal: '-0.19897 0.38923 0.89939', body: "Where photosynthesis happens. It captures sunlight and turns it into food (sugar) for the plant." },
+      { id: 2, title: 'Ribosomes',                   position: '0.05511 0.02764 -0.16759',  normal: '0.19594 0.04108 0.97976',  body: "Tiny factories that read the DNA's instructions and build proteins." },
+      { id: 3, title: 'Mitochondrion',               position: '0.12030 -0.02649 -0.10514', normal: '0.00940 0.91467 0.40409',  body: "The cell's powerhouse. It releases energy from food for the cell to use." },
+      { id: 4, title: 'Golgi Apparatus',             position: '0.14735 0.02567 -0.02508',  normal: '-0.90698 0.07553 0.41435', body: "Packages and sorts proteins, then ships them to where they are needed." },
+      { id: 5, title: 'Nucleolus',                   position: '0.05813 -0.02120 0.05916',  normal: '-0.30746 0.90413 -0.29668', body: "A dense spot inside the nucleus where ribosomes are made." },
+      { id: 6, title: 'Rough Endoplasmic Reticulum', position: '0.11143 -0.02715 0.11096',  normal: '0.59287 0.77335 0.22458',  body: "A folded membrane covered in ribosomes that builds and moves proteins." },
+      { id: 7, title: 'Central Vacuole',             position: '-0.01817 0.01929 -0.06849', normal: '-0.06594 0.99578 -0.06382', body: "A large fluid-filled sac that stores water and keeps the plant cell firm and upright." },
+      { id: 8, title: 'Cell Wall',                   position: '-0.11592 -0.04508 -0.01049', normal: '-0.99701 0.07726 0.00284', body: "A tough outer layer around the plant cell that gives it shape and support." },
+      { id: 9, title: 'Cell Membrane',               position: '-0.06314 -0.02075 0.11073', normal: '-0.54989 0.42673 0.71800', body: "A thin barrier just inside the cell wall that controls what enters and leaves the cell." }
+    ] },
   { id: 'earth-space',  name: 'Earth & Space Sciences', badge: 'Starlight Scout', phase: 2, ready: true, model: 'assets/models/solar_system.glb', space: true },
   { id: 'matter',       name: 'Matter',                 badge: 'Particle Picker', phase: 2, ready: true, model: null },
   { id: 'force-motion', name: 'Force & Motion',         badge: 'Friction Fighter',phase: 2, ready: true, model: 'assets/models/pendulum.glb' },
