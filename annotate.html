@@ -38,8 +38,14 @@
     .reticle::after{content:"";position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.95);}
     .reticle.on{border-color:#19C39A;box-shadow:0 0 0 2px rgba(0,0,0,.25),0 0 14px rgba(25,195,154,.65);}
     .reticle.on::after{background:#19C39A;}
-    .drop{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);background:var(--primary);color:#fff;border:0;border-radius:999px;padding:11px 22px;font:inherit;font-weight:800;font-size:14px;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.3);z-index:6;}
-    .drop:disabled{opacity:.45;cursor:default;}
+    /* live code readout bar at the bottom of the viewer */
+    .readout{position:absolute;left:12px;right:12px;bottom:12px;display:flex;align-items:center;gap:8px;background:rgba(4,44,83,.92);border-radius:12px;padding:8px 8px 8px 12px;z-index:6;box-shadow:0 4px 14px rgba(0,0,0,.3);}
+    .readout code{flex:1;min-width:0;color:#cfe0ee;font-family:ui-monospace,monospace;font-size:12px;line-height:1.35;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .readout code.live{color:#8ff0d0;}
+    .mini{font:inherit;font-size:12.5px;font-weight:800;border:0;border-radius:999px;padding:8px 13px;cursor:pointer;flex:0 0 auto;}
+    .mini.p{background:var(--primary);color:#fff;}
+    .mini.g{background:#EEF3F9;color:var(--muted);}
+    .mini:disabled{opacity:.4;cursor:default;}
     .panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:14px;}
     .panel h2{font-size:14px;margin:0 0 4px;}
     .panel .sub{font-size:12.5px;color:var(--muted);margin:0 0 12px;}
@@ -70,14 +76,18 @@
     <div class="viewer">
       <model-viewer id="mv" camera-controls interaction-prompt="none" shadow-intensity="0" exposure="1" alt="model"></model-viewer>
       <div class="reticle" id="reticle"></div>
-      <button class="drop" id="drop" type="button" disabled>Drop pin here</button>
-      <div class="hint">Pinch / drag to move a part into the circle — it turns green when it's on a part, then tap “Drop pin here”</div>
+      <div class="hint">Pinch / drag to move a part into the circle. When it turns green, its code shows below — copy it and pair it with a label, or tap Capture.</div>
+      <div class="readout" id="readout">
+        <code id="code">Aim the green circle at a part…</code>
+        <button class="mini g" id="copyone" type="button" disabled>Copy code</button>
+        <button class="mini p" id="capture" type="button" disabled>Capture</button>
+      </div>
     </div>
     <div class="panel">
       <h2>Labels <span id="count" style="color:var(--muted);font-weight:600"></span></h2>
-      <p class="sub">Tap the model to add a numbered pin, then name it. <b>Copy labels</b> and send it to Claude — or just place the pins and tell Claude which number is which.</p>
-      <div id="list"><div class="empty">No pins yet. Tap a part of the model to start.</div></div>
-      <p class="note">Tip: rotate/zoom to reach a part, then tap it. Tap a pin (here or on the model) to select it; use its <b>×</b> to remove. Positions are captured automatically.</p>
+      <p class="sub">Aim the circle at a part and tap <b>Capture</b> — it adds a numbered spot here with its code filled in. Name it, then <b>Copy labels</b> and send to Claude. (Or just <b>Copy code</b> for one spot and tell Claude its label.)</p>
+      <div id="list"><div class="empty">No spots yet. Aim the green circle at a part and tap Capture.</div></div>
+      <p class="note">Tip: pinch/drag the model to line a part up in the circle — no need to tap the model itself. Tap a row to select it; use <b>Remove</b> to delete.</p>
     </div>
   </div>
 
@@ -146,7 +156,7 @@
     function render() {
       $('count').textContent = anns.length ? '(' + anns.length + ')' : '';
       anns.forEach(function (a, i) { a.el.textContent = (i + 1); });
-      if (!anns.length) { list.innerHTML = '<div class="empty">No pins yet. Tap a part of the model to start.</div>'; return; }
+      if (!anns.length) { list.innerHTML = '<div class="empty">No spots yet. Aim the green circle at a part and tap Capture.</div>'; return; }
       list.innerHTML = '';
       anns.forEach(function (a, i) {
         var row = document.createElement('div');
@@ -165,36 +175,44 @@
       });
     }
 
-    // ---- centre reticle: pinch/drag a part into the circle, then "Drop pin here".
-    // Far easier than tapping a small target on a phone. ----
-    var reticle = document.getElementById('reticle'), dropBtn = document.getElementById('drop');
+    // ---- centre reticle + live code readout. Pinch/drag a part into the circle;
+    // when the centre ray hits geometry the readout shows that spot's code. Copy it,
+    // or tap Capture to add a labelled row. No tapping/pointing on the model. ----
+    var reticle = $('reticle'), codeEl = $('code'), copyOne = $('copyone'), captureBtn = $('capture');
+    var lastHit = null;
     function centerHit() {
       if (!mv.loaded) return null;
       var r = mv.getBoundingClientRect();
       return mv.positionAndNormalFromPoint(r.width / 2, r.height / 2);
     }
+    function snippet(h) { return 'position: "' + h.position + '", normal: "' + h.normal + '"'; }
     var rT = 0;
     function updateReticle() {
       var now = Date.now(); if (now - rT < 60) return; rT = now;   // throttle raycasts
       var hit = centerHit();
-      reticle.classList.toggle('on', !!hit);
-      dropBtn.disabled = !hit;
+      if (hit) {
+        lastHit = { position: fmt(hit.position), normal: fmt(hit.normal) };
+        reticle.classList.add('on');
+        codeEl.textContent = snippet(lastHit); codeEl.classList.add('live');
+        copyOne.disabled = false; captureBtn.disabled = false;
+      } else {
+        lastHit = null;
+        reticle.classList.remove('on');
+        codeEl.textContent = 'Aim the green circle at a part…'; codeEl.classList.remove('live');
+        copyOne.disabled = true; captureBtn.disabled = true;
+      }
     }
     mv.addEventListener('camera-change', updateReticle);
     mv.addEventListener('load', function () { setTimeout(updateReticle, 60); });
-    dropBtn.addEventListener('click', function () {
-      var hit = centerHit();
-      if (!hit) { toast('Move a part into the circle first'); return; }
-      addPin(fmt(hit.position), fmt(hit.normal));
-    });
 
-    // ---- (optional) tap directly on a part also drops a pin ----
-    mv.addEventListener('click', function (e) {
-      if (e.target.closest('.pin') || e.target.closest('.drop')) return;
-      if (!mv.loaded) return;
-      var r = mv.getBoundingClientRect();
-      var hit = mv.positionAndNormalFromPoint(e.clientX - r.left, e.clientY - r.top);
-      if (hit) addPin(fmt(hit.position), fmt(hit.normal));
+    copyOne.addEventListener('click', function () {
+      if (!lastHit) { toast('Aim at a part first'); return; }
+      copyText(snippet(lastHit), 'Code copied — paste it to Claude with a label');
+    });
+    captureBtn.addEventListener('click', function () {
+      if (!lastHit) { toast('Aim at a part first'); return; }
+      addPin(lastHit.position, lastHit.normal);
+      toast('Captured — name it in the list');
     });
 
     // ---- export ----
@@ -206,18 +224,20 @@
       }).join(',\n');
       return 'Topic: ' + topic.id + '\n\n    annotations: [\n' + items + '\n    ]';
     }
-    $('copy').addEventListener('click', function () {
-      if (!anns.length) { toast('No pins to copy yet'); return; }
-      var txt = exportText();
+    function copyText(txt, okMsg) {
       if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(txt).then(function () { toast('Copied ' + anns.length + ' labels — send to Claude'); }, function () { fallbackCopy(txt); });
-      } else fallbackCopy(txt);
-    });
-    function fallbackCopy(txt) {
+        navigator.clipboard.writeText(txt).then(function () { toast(okMsg); }, function () { fallbackCopy(txt, okMsg); });
+      } else fallbackCopy(txt, okMsg);
+    }
+    function fallbackCopy(txt, okMsg) {
       var ta = document.createElement('textarea'); ta.value = txt; document.body.appendChild(ta); ta.select();
-      try { document.execCommand('copy'); toast('Copied — send to Claude'); } catch (e) { toast('Copy failed — select the text manually'); }
+      try { document.execCommand('copy'); toast(okMsg || 'Copied'); } catch (e) { toast('Copy failed — select the text manually'); }
       document.body.removeChild(ta);
     }
+    $('copy').addEventListener('click', function () {
+      if (!anns.length) { toast('No spots to copy yet'); return; }
+      copyText(exportText(), 'Copied ' + anns.length + ' labels — send to Claude');
+    });
     $('clear').addEventListener('click', function () {
       if (!anns.length || !confirm('Remove all pins on this model?')) return;
       anns.slice().forEach(function (a) { remove(a.key); });
