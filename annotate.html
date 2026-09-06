@@ -29,11 +29,17 @@
     @media (max-width:820px){.wrap{grid-template-columns:1fr;}}
     .viewer{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;}
     model-viewer{width:100%;height:64vh;min-height:380px;background:#f4f8fc;--min-hotspot-opacity:1;}
-    .hint{position:absolute;left:12px;bottom:12px;background:rgba(4,44,83,.82);color:#fff;font-size:12.5px;font-weight:600;padding:7px 12px;border-radius:999px;pointer-events:none;}
+    .hint{position:absolute;left:12px;top:12px;right:12px;background:rgba(4,44,83,.82);color:#fff;font-size:12.5px;font-weight:600;padding:7px 12px;border-radius:999px;pointer-events:none;text-align:center;}
     /* numbered pin on the model */
     .pin{--c:var(--primary);width:26px;height:26px;border-radius:50%;border:2px solid #fff;background:var(--c);color:#fff;font-weight:800;font-size:13px;display:grid;place-items:center;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.35);}
     .pin.sel{outline:3px solid #fff;outline-offset:2px;--c:var(--accent);}
-    .pin.preview{--c:#12A594;width:16px;height:16px;opacity:.85;pointer-events:none;box-shadow:0 0 0 4px rgba(18,165,148,.28),0 2px 6px rgba(0,0,0,.4);}
+    /* fixed centre reticle: move a part into it, then "Drop pin here" */
+    .reticle{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:46px;height:46px;border:2.5px solid rgba(255,255,255,.9);border-radius:50%;pointer-events:none;box-shadow:0 0 0 2px rgba(0,0,0,.28),0 0 10px rgba(0,0,0,.3);z-index:4;transition:border-color .12s,box-shadow .12s;}
+    .reticle::after{content:"";position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.95);}
+    .reticle.on{border-color:#19C39A;box-shadow:0 0 0 2px rgba(0,0,0,.25),0 0 14px rgba(25,195,154,.65);}
+    .reticle.on::after{background:#19C39A;}
+    .drop{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);background:var(--primary);color:#fff;border:0;border-radius:999px;padding:11px 22px;font:inherit;font-weight:800;font-size:14px;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.3);z-index:6;}
+    .drop:disabled{opacity:.45;cursor:default;}
     .panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:14px;}
     .panel h2{font-size:14px;margin:0 0 4px;}
     .panel .sub{font-size:12.5px;color:var(--muted);margin:0 0 12px;}
@@ -63,7 +69,9 @@
   <div class="wrap">
     <div class="viewer">
       <model-viewer id="mv" camera-controls interaction-prompt="none" shadow-intensity="0" exposure="1" alt="model"></model-viewer>
-      <div class="hint">Zoom in on a part, aim (green dot = where it lands), then click to drop a pin</div>
+      <div class="reticle" id="reticle"></div>
+      <button class="drop" id="drop" type="button" disabled>Drop pin here</button>
+      <div class="hint">Pinch / drag to move a part into the circle — it turns green when it's on a part, then tap “Drop pin here”</div>
     </div>
     <div class="panel">
       <h2>Labels <span id="count" style="color:var(--muted);font-weight:600"></span></h2>
@@ -157,32 +165,36 @@
       });
     }
 
-    // ---- aim preview: a green dot follows the cursor on the model surface so you
-    // can see exactly where a pin will drop (helps on crowded models like orbits) ----
-    var preview = document.createElement('button');
-    preview.type = 'button'; preview.className = 'pin preview'; preview.setAttribute('slot', 'hotspot-preview');
-    preview.style.display = 'none'; mv.appendChild(preview);
-    var lastT = 0;
-    mv.addEventListener('pointermove', function (e) {
-      if (e.pointerType === 'mouse' && e.buttons) { preview.style.display = 'none'; return; } // dragging to orbit
-      if (!mv.loaded) { preview.style.display = 'none'; return; }
-      var now = Date.now(); if (now - lastT < 40) return; lastT = now; // throttle raycasts
-      var rect = mv.getBoundingClientRect();
-      var hit = mv.positionAndNormalFromPoint(e.clientX - rect.left, e.clientY - rect.top);
-      if (hit) { preview.setAttribute('data-position', fmt(hit.position)); preview.setAttribute('data-normal', fmt(hit.normal)); preview.style.display = ''; }
-      else preview.style.display = 'none';
-    });
-    mv.addEventListener('pointerleave', function () { preview.style.display = 'none'; });
-
-    // ---- click the model surface to drop a pin ----
-    mv.addEventListener('click', function (e) {
-      if (e.target.closest('.pin')) return;              // clicked an existing pin
-      if (!mv.loaded) return;
-      var rect = mv.getBoundingClientRect();
-      var hit = mv.positionAndNormalFromPoint(e.clientX - rect.left, e.clientY - rect.top);
-      if (!hit) { toast('Aim at the part (the green dot shows where it lands) — zoom in for small parts'); return; }
+    // ---- centre reticle: pinch/drag a part into the circle, then "Drop pin here".
+    // Far easier than tapping a small target on a phone. ----
+    var reticle = document.getElementById('reticle'), dropBtn = document.getElementById('drop');
+    function centerHit() {
+      if (!mv.loaded) return null;
+      var r = mv.getBoundingClientRect();
+      return mv.positionAndNormalFromPoint(r.width / 2, r.height / 2);
+    }
+    var rT = 0;
+    function updateReticle() {
+      var now = Date.now(); if (now - rT < 60) return; rT = now;   // throttle raycasts
+      var hit = centerHit();
+      reticle.classList.toggle('on', !!hit);
+      dropBtn.disabled = !hit;
+    }
+    mv.addEventListener('camera-change', updateReticle);
+    mv.addEventListener('load', function () { setTimeout(updateReticle, 60); });
+    dropBtn.addEventListener('click', function () {
+      var hit = centerHit();
+      if (!hit) { toast('Move a part into the circle first'); return; }
       addPin(fmt(hit.position), fmt(hit.normal));
-      preview.style.display = 'none';
+    });
+
+    // ---- (optional) tap directly on a part also drops a pin ----
+    mv.addEventListener('click', function (e) {
+      if (e.target.closest('.pin') || e.target.closest('.drop')) return;
+      if (!mv.loaded) return;
+      var r = mv.getBoundingClientRect();
+      var hit = mv.positionAndNormalFromPoint(e.clientX - r.left, e.clientY - r.top);
+      if (hit) addPin(fmt(hit.position), fmt(hit.normal));
     });
 
     // ---- export ----
