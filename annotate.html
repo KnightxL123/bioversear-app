@@ -33,6 +33,7 @@
     /* numbered pin on the model */
     .pin{--c:var(--primary);width:26px;height:26px;border-radius:50%;border:2px solid #fff;background:var(--c);color:#fff;font-weight:800;font-size:13px;display:grid;place-items:center;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.35);}
     .pin.sel{outline:3px solid #fff;outline-offset:2px;--c:var(--accent);}
+    .pin.preview{--c:#12A594;width:16px;height:16px;opacity:.85;pointer-events:none;box-shadow:0 0 0 4px rgba(18,165,148,.28),0 2px 6px rgba(0,0,0,.4);}
     .panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:14px;}
     .panel h2{font-size:14px;margin:0 0 4px;}
     .panel .sub{font-size:12.5px;color:var(--muted);margin:0 0 12px;}
@@ -62,7 +63,7 @@
   <div class="wrap">
     <div class="viewer">
       <model-viewer id="mv" camera-controls interaction-prompt="none" shadow-intensity="0" exposure="1" alt="model"></model-viewer>
-      <div class="hint">Tap a part of the model to drop a pin</div>
+      <div class="hint">Zoom in on a part, aim (green dot = where it lands), then click to drop a pin</div>
     </div>
     <div class="panel">
       <h2>Labels <span id="count" style="color:var(--muted);font-weight:600"></span></h2>
@@ -156,14 +157,32 @@
       });
     }
 
+    // ---- aim preview: a green dot follows the cursor on the model surface so you
+    // can see exactly where a pin will drop (helps on crowded models like orbits) ----
+    var preview = document.createElement('button');
+    preview.type = 'button'; preview.className = 'pin preview'; preview.setAttribute('slot', 'hotspot-preview');
+    preview.style.display = 'none'; mv.appendChild(preview);
+    var lastT = 0;
+    mv.addEventListener('pointermove', function (e) {
+      if (e.pointerType === 'mouse' && e.buttons) { preview.style.display = 'none'; return; } // dragging to orbit
+      if (!mv.loaded) { preview.style.display = 'none'; return; }
+      var now = Date.now(); if (now - lastT < 40) return; lastT = now; // throttle raycasts
+      var rect = mv.getBoundingClientRect();
+      var hit = mv.positionAndNormalFromPoint(e.clientX - rect.left, e.clientY - rect.top);
+      if (hit) { preview.setAttribute('data-position', fmt(hit.position)); preview.setAttribute('data-normal', fmt(hit.normal)); preview.style.display = ''; }
+      else preview.style.display = 'none';
+    });
+    mv.addEventListener('pointerleave', function () { preview.style.display = 'none'; });
+
     // ---- click the model surface to drop a pin ----
     mv.addEventListener('click', function (e) {
       if (e.target.closest('.pin')) return;              // clicked an existing pin
       if (!mv.loaded) return;
       var rect = mv.getBoundingClientRect();
       var hit = mv.positionAndNormalFromPoint(e.clientX - rect.left, e.clientY - rect.top);
-      if (!hit) { toast('Tap directly on the model'); return; } // ray missed the mesh
+      if (!hit) { toast('Aim at the part (the green dot shows where it lands) — zoom in for small parts'); return; }
       addPin(fmt(hit.position), fmt(hit.normal));
+      preview.style.display = 'none';
     });
 
     // ---- export ----
