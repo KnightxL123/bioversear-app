@@ -46,16 +46,16 @@ window.TOPICS = [
     // Pins placed via annotate.html (positions sampled on our mesh). Bodies are
     // drafts — teacher to review/replace.
     annotations: [
-      { id: 1,  title: 'DNA',                         position: '-0.02519 0.01561 0.00371',  normal: '-0.12086 -0.05583 -0.99110', body: '' },
-      { id: 2,  title: 'Nucleolus',                   position: '-0.03470 0.00327 0.00930',  normal: '0.82049 0.49034 -0.29387',   body: '' },
-      { id: 3,  title: 'Nucleus',                     position: '-0.05508 0.02688 0.00426',  normal: '0.88263 0.08795 -0.46176',   body: '' },
-      { id: 4,  title: 'Mitochondrion',               position: '-0.08844 -0.00913 -0.08768', normal: '-0.04586 -0.99716 -0.05982', body: '' },
-      { id: 5,  title: 'Golgi Apparatus',             position: '0.01799 -0.00052 -0.08704',  normal: '-0.00749 0.99964 -0.02572',  body: '' },
-      { id: 6,  title: 'Lysosome',                    position: '0.00001 -0.00969 -0.10184',  normal: '0.02847 0.99478 -0.09800',   body: '' },
-      { id: 7,  title: 'Cytoplasm',                   position: '0.14366 -0.01405 -0.01633',  normal: '-0.04151 0.99839 -0.03873',  body: '' },
-      { id: 8,  title: 'Rough Endoplasmic Reticulum', position: '-0.04369 -0.01287 0.07928',  normal: '-0.08968 0.98914 0.11649',   body: '' },
-      { id: 9,  title: 'Centrosome',                  position: '0.03457 -0.01128 0.11908',   normal: '0.04447 -0.26579 0.96300',   body: '' },
-      { id: 10, title: 'Ribosomes',                   position: '-0.00153 -0.00303 0.14287',  normal: '-0.51382 0.55702 0.65247',   body: '' }
+      { id: 1,  title: 'DNA',                         position: '-0.02519 0.01561 0.00371',  normal: '-0.12086 -0.05583 -0.99110', body: "The cell's genetic instructions, coiled up inside the nucleus. It tells the cell how to build proteins and how to work." },
+      { id: 2,  title: 'Nucleolus',                   position: '-0.03470 0.00327 0.00930',  normal: '0.82049 0.49034 -0.29387',   body: "A dense spot inside the nucleus where ribosomes are made." },
+      { id: 3,  title: 'Nucleus',                     position: '-0.05508 0.02688 0.00426',  normal: '0.88263 0.08795 -0.46176',   body: "The control centre of the cell. It holds the DNA and directs the cell's activities." },
+      { id: 4,  title: 'Mitochondrion',               position: '-0.08844 -0.00913 -0.08768', normal: '-0.04586 -0.99716 -0.05982', body: "The cell's powerhouse. It releases energy from food for the cell to use." },
+      { id: 5,  title: 'Golgi Apparatus',             position: '0.01799 -0.00052 -0.08704',  normal: '-0.00749 0.99964 -0.02572',  body: "Packages and sorts proteins, then ships them to where they are needed." },
+      { id: 6,  title: 'Lysosome',                    position: '0.00001 -0.00969 -0.10184',  normal: '0.02847 0.99478 -0.09800',   body: "Holds enzymes that break down waste and worn-out parts to keep the cell clean." },
+      { id: 7,  title: 'Cytoplasm',                   position: '0.14366 -0.01405 -0.01633',  normal: '-0.04151 0.99839 -0.03873',  body: "The jelly-like fluid that fills the cell and holds the organelles in place." },
+      { id: 8,  title: 'Rough Endoplasmic Reticulum', position: '-0.04369 -0.01287 0.07928',  normal: '-0.08968 0.98914 0.11649',   body: "A folded membrane covered in ribosomes that builds and moves proteins." },
+      { id: 9,  title: 'Centrosome',                  position: '0.03457 -0.01128 0.11908',   normal: '0.04447 -0.26579 0.96300',   body: "Helps organise the cell and pulls chromosomes apart when the cell divides." },
+      { id: 10, title: 'Ribosomes',                   position: '-0.00153 -0.00303 0.14287',  normal: '-0.51382 0.55702 0.65247',   body: "Tiny factories that read the DNA's instructions and assemble proteins." }
     ] },
   { id: 'life-sciences',name: 'Life Sciences',          badge: 'Eco-Explorer',    phase: 2, ready: true, model: 'assets/models/plant_cell.glb' },
   { id: 'earth-space',  name: 'Earth & Space Sciences', badge: 'Starlight Scout', phase: 2, ready: true, model: 'assets/models/solar_system.glb', space: true },
