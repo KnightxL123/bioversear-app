@@ -70,7 +70,19 @@ window.TOPICS = [
       { id: 8, title: 'Cell Wall',                   position: '-0.11592 -0.04508 -0.01049', normal: '-0.99701 0.07726 0.00284', body: "A tough outer layer around the plant cell that gives it shape and support." },
       { id: 9, title: 'Cell Membrane',               position: '-0.06314 -0.02075 0.11073', normal: '-0.54989 0.42673 0.71800', body: "A thin barrier just inside the cell wall that controls what enters and leaves the cell." }
     ] },
-  { id: 'earth-space',  name: 'Earth & Space Sciences', badge: 'Starlight Scout', phase: 2, ready: true, model: 'assets/models/solar_system.glb', space: true },
+  { id: 'earth-space',  name: 'Earth & Space Sciences', badge: 'Starlight Scout', phase: 2, ready: true, model: 'assets/models/solar_system.glb', space: true,
+    // Pins placed via annotate.html on the orrery. Bodies are drafts — teacher to review/replace.
+    annotations: [
+      { id: 1, title: 'Sun',     position: '-0.01313 0.00615 0.00331',  normal: '-0.80622 0.53054 0.26180', body: "The star at the centre of our solar system. Its gravity holds all the planets in orbit, and its light and heat make life on Earth possible." },
+      { id: 2, title: 'Mercury', position: '-0.00433 0.00407 -0.03474', normal: '0.17220 0.78393 0.59649',  body: "The smallest planet and the closest to the Sun. It has almost no atmosphere, so it is scorching by day and freezing at night." },
+      { id: 3, title: 'Venus',   position: '-0.01260 0.00785 -0.06272', normal: '0.21929 0.55755 0.80065',  body: "The hottest planet, wrapped in thick clouds that trap heat like a blanket. It is about the same size as Earth." },
+      { id: 4, title: 'Earth',   position: '0.03600 0.00765 -0.05249',  normal: '-0.11580 0.99314 -0.01627', body: "Our home planet — the only one known to have liquid water and life. It sits in the zone that is not too hot and not too cold." },
+      { id: 5, title: 'Mars',    position: '0.06331 -0.01159 0.05472',  normal: '-0.20608 0.47195 -0.85720', body: "The \"Red Planet,\" coloured by rusty iron dust. It has the tallest volcano and the largest canyon in the solar system." },
+      { id: 6, title: 'Jupiter', position: '-0.10460 0.01122 0.04644',  normal: '0.77541 0.32170 -0.54337', body: "The largest planet — a giant ball of gas with a famous Great Red Spot, a storm bigger than the whole Earth." },
+      { id: 7, title: 'Saturn',  position: '0.13756 -0.00556 -0.07710', normal: '-0.42992 0.73911 -0.51854', body: "Famous for its bright rings made of ice and rock. It is a gas giant and the second-largest planet." },
+      { id: 8, title: 'Uranus',  position: '-0.15025 0.03283 -0.10937', normal: '0.28298 0.91429 0.28983',  body: "An icy giant that spins on its side, so it rolls around the Sun like a ball. Methane gas gives it a blue-green colour." },
+      { id: 9, title: 'Neptune', position: '-0.16226 0.00351 0.14341',  normal: '0.80275 -0.30780 -0.51073', body: "The farthest planet from the Sun — a cold, windy ice giant with the fastest winds in the solar system." }
+    ] },
   { id: 'matter',       name: 'Matter',                 badge: 'Particle Picker', phase: 2, ready: true, model: null },
   { id: 'force-motion', name: 'Force & Motion',         badge: 'Friction Fighter',phase: 2, ready: true, model: 'assets/models/pendulum.glb' },
   { id: 'energy',       name: 'Energy',                 badge: 'Spark Starter',   phase: 2, ready: true, model: null }
