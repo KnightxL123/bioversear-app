@@ -218,6 +218,66 @@ model-viewer.space {
   border-color: #1b2140;
   --poster-color: #070a1a;
 }
+/* Per-topic scene backdrops. Each keeps a lighter glow near the centre so the
+   model (lit by model-viewer's default environment) still reads over the dark
+   ground. Pure CSS — no image assets. Applied via mv.classList `scene-<name>`. */
+model-viewer.scene-cell-warm { /* Animal Cells — warm cytoplasm under the microscope */
+  background:
+    radial-gradient(closest-side at 22% 28%, rgba(255,120,150,.30), transparent 70%),
+    radial-gradient(closest-side at 80% 22%, rgba(255,182,92,.24), transparent 70%),
+    radial-gradient(closest-side at 70% 78%, rgba(214,88,150,.28), transparent 72%),
+    radial-gradient(closest-side at 28% 82%, rgba(255,150,120,.22), transparent 72%),
+    radial-gradient(120% 120% at 50% 48%, rgba(150,40,86,.45) 0%, #240f1c 55%, #140810 100%);
+  border-color: #3a1526;
+  --poster-color: #180a12;
+}
+model-viewer.scene-cell-cool { /* Human Cells — cool cellular scan */
+  background:
+    radial-gradient(closest-side at 24% 28%, rgba(84,204,224,.26), transparent 70%),
+    radial-gradient(closest-side at 78% 26%, rgba(146,124,255,.24), transparent 70%),
+    radial-gradient(closest-side at 68% 76%, rgba(58,182,204,.26), transparent 72%),
+    radial-gradient(closest-side at 30% 80%, rgba(120,150,255,.20), transparent 72%),
+    radial-gradient(120% 120% at 50% 48%, rgba(26,84,124,.50) 0%, #0a2230 55%, #05121c 100%);
+  border-color: #143246;
+  --poster-color: #08202c;
+}
+model-viewer.scene-flora { /* Life Sciences — verdant botanical light */
+  background:
+    radial-gradient(closest-side at 30% 22%, rgba(186,244,120,.28), transparent 70%),
+    radial-gradient(closest-side at 76% 30%, rgba(92,214,142,.24), transparent 70%),
+    radial-gradient(closest-side at 62% 80%, rgba(58,170,110,.26), transparent 72%),
+    radial-gradient(closest-side at 24% 76%, rgba(210,232,140,.20), transparent 72%),
+    radial-gradient(120% 120% at 50% 46%, rgba(28,104,66,.46) 0%, #0e2c1a 55%, #06160c 100%);
+  border-color: #17402a;
+  --poster-color: #0b2416;
+}
+model-viewer.scene-lab { /* Force & Motion — physics-lab blueprint grid */
+  background:
+    repeating-linear-gradient(0deg, rgba(120,180,255,.07) 0 1px, transparent 1px 34px),
+    repeating-linear-gradient(90deg, rgba(120,180,255,.07) 0 1px, transparent 1px 34px),
+    radial-gradient(closest-side at 50% 40%, rgba(88,150,238,.26), transparent 78%),
+    radial-gradient(130% 120% at 50% 50%, #0e1c38 0%, #0a1226 55%, #05080f 100%);
+  border-color: #1a2a4a;
+  --poster-color: #0a1226;
+}
+model-viewer.scene-matter { /* Matter — atomic particle field (ready for its model) */
+  background:
+    radial-gradient(closest-side at 22% 30%, rgba(200,120,255,.24), transparent 68%),
+    radial-gradient(closest-side at 80% 70%, rgba(120,160,255,.20), transparent 68%),
+    radial-gradient(rgba(255,255,255,.10) 1px, transparent 1.6px) 0 0 / 26px 26px,
+    radial-gradient(130% 120% at 50% 48%, #1c1030 0%, #140a24 55%, #08040f 100%);
+  border-color: #2a1a44;
+  --poster-color: #140a24;
+}
+model-viewer.scene-energy { /* Energy — plasma glow (ready for its model) */
+  background:
+    radial-gradient(closest-side at 50% 38%, rgba(255,214,84,.26), transparent 72%),
+    radial-gradient(closest-side at 22% 76%, rgba(255,120,60,.20), transparent 70%),
+    radial-gradient(closest-side at 80% 26%, rgba(120,200,255,.18), transparent 70%),
+    radial-gradient(130% 120% at 50% 50%, #2a1806 0%, #1c1204 55%, #0a0703 100%);
+  border-color: #3a2810;
+  --poster-color: #1c1204;
+}
 .leaders { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 2; }
 .leader-line { stroke: var(--ink); stroke-width: 1.5; }
 .cards { position: absolute; inset: 0; pointer-events: none; z-index: 3; }
@@ -289,6 +349,7 @@ model-viewer.space {
 .tool svg { width: 20px; height: 20px; color: var(--primary); }
 .tool:active { background: var(--surface-2); }
 .tool.on { border-color: var(--primary); background: var(--primary-tint); }
+.tool[hidden] { display: none !important; } /* .tool's display beats the bare [hidden] attr; guard the Play button so it stays hidden on non-animated topics */
 
 /* Description sheet */
 .annot-sheet {

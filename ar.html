@@ -125,6 +125,7 @@
     var status = document.getElementById('status');
     mv.setAttribute('alt', t.name + ' 3D model');
     if (t.space) mv.classList.add('space'); // galaxy backdrop for space topics
+    if (t.scene) mv.classList.add('scene-' + t.scene); // themed per-topic backdrop
     mv.src = t.model;
     // iOS Quick Look drops animations from the auto-generated USDZ; if a topic
     // provides a hand-made animated .usdz, use it so iPhone placed-AR animates too.

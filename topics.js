@@ -10,6 +10,7 @@ window.TOPICS = [
     phase: 1,
     ready: true,
     model: 'assets/models/animal_cell.glb',
+    scene: 'cell-warm', // AR backdrop (see model-viewer.scene-* in styles.css)
     // Real optimized asset: 795,812 bytes, Draco-required (KHR_draco_mesh_compression)
     // + WebP textures. Draco decoder is vendored locally, so it renders with no network.
 
@@ -42,7 +43,7 @@ window.TOPICS = [
   // soon" for AR while Pre/Post quizzes work. Drop in a model + flip nothing else:
   // ar.html and the hub read `model` directly. Set an `annotations` array when the
   // model has hotspots.
-  { id: 'human-cells',  name: 'Human Cells', badge: 'DNA Decycler', phase: 2, ready: true, model: 'assets/models/human_cell.glb',
+  { id: 'human-cells',  name: 'Human Cells', badge: 'DNA Decycler', phase: 2, ready: true, model: 'assets/models/human_cell.glb', scene: 'cell-cool',
     // Pins placed via annotate.html (positions sampled on our mesh). Bodies are
     // drafts — teacher to review/replace.
     annotations: [
@@ -57,7 +58,7 @@ window.TOPICS = [
       { id: 9,  title: 'Centrosome',                  position: '0.03457 -0.01128 0.11908',   normal: '0.04447 -0.26579 0.96300',   body: "Helps organise the cell and pulls chromosomes apart when the cell divides." },
       { id: 10, title: 'Ribosomes',                   position: '-0.00153 -0.00303 0.14287',  normal: '-0.51382 0.55702 0.65247',   body: "Tiny factories that read the DNA's instructions and assemble proteins." }
     ] },
-  { id: 'life-sciences', name: 'Life Sciences', badge: 'Eco-Explorer', phase: 2, ready: true, model: 'assets/models/plant_cell.glb',
+  { id: 'life-sciences', name: 'Life Sciences', badge: 'Eco-Explorer', phase: 2, ready: true, model: 'assets/models/plant_cell.glb', scene: 'flora',
     // Pins placed via annotate.html. Bodies are drafts — teacher to review/replace.
     annotations: [
       { id: 1, title: 'Chloroplast',                 position: '0.02451 -0.00968 -0.17203', normal: '-0.19897 0.38923 0.89939', body: "Where photosynthesis happens. It captures sunlight and turns it into food (sugar) for the plant." },
@@ -83,11 +84,11 @@ window.TOPICS = [
       { id: 8, title: 'Uranus',  position: '-0.15025 0.03283 -0.10937', normal: '0.28298 0.91429 0.28983',  body: "An icy giant that spins on its side, so it rolls around the Sun like a ball. Methane gas gives it a blue-green colour." },
       { id: 9, title: 'Neptune', position: '-0.16226 0.00351 0.14341',  normal: '0.80275 -0.30780 -0.51073', body: "The farthest planet from the Sun — a cold, windy ice giant with the fastest winds in the solar system." }
     ] },
-  { id: 'matter',       name: 'Matter',                 badge: 'Particle Picker', phase: 2, ready: true, model: null },
-  { id: 'force-motion', name: 'Force & Motion',         badge: 'Friction Fighter',phase: 2, ready: true, model: 'assets/models/pendulum.glb', animate: true },
+  { id: 'matter',       name: 'Matter',                 badge: 'Particle Picker', phase: 2, ready: true, model: null, scene: 'matter' },
+  { id: 'force-motion', name: 'Force & Motion',         badge: 'Friction Fighter',phase: 2, ready: true, model: 'assets/models/pendulum.glb', animate: true, scene: 'lab' },
   // `animate: true` = auto-play the model's animation in the AR view. Leave it off
   // for models whose labels must stay locked to parts (e.g. the solar-system orrery,
   // whose planets orbit) — those load paused so hotspots sit on the right part, and a
   // Play/Pause control lets students watch the motion when they want.
-  { id: 'energy',       name: 'Energy',                 badge: 'Spark Starter',   phase: 2, ready: true, model: null }
+  { id: 'energy',       name: 'Energy',                 badge: 'Spark Starter',   phase: 2, ready: true, model: null, scene: 'energy' }
 ];
