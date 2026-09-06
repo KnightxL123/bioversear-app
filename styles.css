@@ -247,7 +247,7 @@ model-viewer.space {
   box-shadow: 0 0 0 2px var(--c, var(--primary)), 0 8px 20px rgba(4,44,83,.2);
   text-align: left;
 }
-.info-card.open { display: block; }
+.info-card.open { display: block; pointer-events: auto; } /* re-enable taps (.cards host is pointer-events:none) so × and 🔊 work */
 .info-card.dim { opacity: .55; }
 .ic-head { display: flex; align-items: center; gap: 7px; margin-bottom: 4px; }
 .ic-num {
