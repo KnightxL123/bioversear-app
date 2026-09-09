@@ -16,10 +16,17 @@
 </head>
 <body>
   <div class="app has-nav">
-    <h1 class="page-h">Badges</h1>
-    <p class="section-title" style="text-transform:none;letter-spacing:0;font-weight:400;color:var(--muted);font-size:13px;margin:0 2px 16px;">
-      Earn a badge by completing each topic's post-test. <span id="badge-count"></span>
-    </p>
+    <section class="pf-hero home-hero">
+      <img class="pf-hero-bg" src="assets/splash/tarsier-hero-scene.webp" alt="" aria-hidden="true">
+      <div class="pf-hero-card">
+        <span class="home-hero-av" id="home-av" aria-hidden="true">?</span>
+        <div class="pf-hero-info">
+          <div class="pf-hero-name">Badges</div>
+          <div class="pf-hero-class" id="hero-sub">Collect a badge for every topic.</div>
+        </div>
+      </div>
+    </section>
+    <p class="acct-note" style="margin:0 2px 16px">Earn a badge by completing each topic's post-test.</p>
     <div class="badge-grid" id="badge-grid"></div>
     <div class="spacer-grow"></div>
   </div>
@@ -37,7 +44,11 @@
 
     var topics = window.TOPICS || [];
     var stats = BV.overallStats();
-    document.getElementById('badge-count').textContent = 'You have ' + stats.badges + ' of ' + stats.total + '.';
+    document.getElementById('hero-sub').textContent = 'You have ' + stats.badges + ' of ' + stats.total + ' badges.';
+    // Personalise the hero with the student's avatar (or their initial).
+    var prof = BV.getProfile() || {}, avEl = document.getElementById('home-av');
+    var av = prof.avatar && BV.avatarSvg(prof.avatar);
+    if (avEl) avEl.innerHTML = av || ((prof.alias || '?').trim()[0] || '?').toUpperCase();
 
     var grid = document.getElementById('badge-grid');
     topics.forEach(function (t) {

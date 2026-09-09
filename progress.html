@@ -16,7 +16,16 @@
 </head>
 <body>
   <div class="app has-nav">
-    <h1 class="page-h">Progress</h1>
+    <section class="pf-hero home-hero">
+      <img class="pf-hero-bg" src="assets/splash/tarsier-hero-scene.webp" alt="" aria-hidden="true">
+      <div class="pf-hero-card">
+        <span class="home-hero-av" id="home-av" aria-hidden="true">?</span>
+        <div class="pf-hero-info">
+          <div class="pf-hero-name">Progress</div>
+          <div class="pf-hero-class" id="hero-sub">Keep going — you're doing great!</div>
+        </div>
+      </div>
+    </section>
 
     <div class="stat-row" style="margin-bottom:20px">
       <div class="stat amber"><div class="num" id="s-badges">0</div><div class="lbl">Badges</div></div>
@@ -45,6 +54,11 @@
     $('s-badges').textContent = stats.badges;
     $('s-done').textContent = stats.done;
     $('s-points').textContent = stats.points;
+    $('hero-sub').textContent = stats.done + ' of ' + stats.total + ' topics done · ' + stats.points + ' pts';
+    // Personalise the hero with the student's avatar (or their initial).
+    var prof = BV.getProfile() || {}, avEl = $('home-av');
+    var av = prof.avatar && BV.avatarSvg(prof.avatar);
+    if (avEl) avEl.innerHTML = av || ((prof.alias || '?').trim()[0] || '?').toUpperCase();
 
     var list = $('prog-list');
     (window.TOPICS || []).forEach(function (t) {
