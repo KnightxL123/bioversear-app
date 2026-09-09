@@ -138,11 +138,11 @@
     $('s-points').textContent = stats.points;
     $('s-done').textContent = stats.done;
 
-    function setClassEverywhere(code) {
-      $('p-class-line').textContent = code ? ('Class ' + code) : 'Explorer';
-      $('a-class').textContent = code || '—';
+    function setClassEverywhere(name) {
+      $('p-class-line').textContent = name ? ('Class ' + name) : 'Explorer';
+      $('a-class').textContent = name || '—';
     }
-    setClassEverywhere(profile.classCode || '');
+    setClassEverywhere(BV.classDisplay());
 
     // ---- Explorer (avatar) card + hero pill ----
     var pAvatar = profile.avatar || BV.defaultAvatar();
@@ -209,7 +209,7 @@
           '<div class="pf-comp-top"><span class="pf-comp-title">🏆 Class Competition</span>' +
             '<a class="pf-comp-link" href="leaderboard.html">View Leaderboard →</a></div>' +
           '<div class="pf-comp-body"><div class="pf-comp-main">' +
-            '<div class="pf-comp-big">Class ' + BV.escape(code) + '</div>' +
+            '<div class="pf-comp-big">Class ' + BV.escape(BV.classDisplay()) + '</div>' +
             '<p class="pf-comp-desc">You’re competing with your classmates. Keep learning to climb the leaderboard!</p>' +
             '<button class="pf-comp-leave" id="comp-leave" type="button">Leave competition</button>' +
           '</div>' + PODIUM + '</div>';
@@ -236,7 +236,7 @@
           if (!val) { msg.className = 'form-msg show err'; msg.textContent = 'Enter a class code first.'; return; }
           var b = this; b.disabled = true; b.textContent = '…';
           BV.joinClass(val).then(function (r) {
-            if (r.ok) { setClassEverywhere(val); renderComp(); }
+            if (r.ok) { setClassEverywhere(r.className || val); renderComp(); }
             else { b.disabled = false; b.textContent = 'Join'; msg.className = 'form-msg show err'; msg.textContent = r.error; }
           });
         });

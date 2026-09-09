@@ -115,15 +115,26 @@
         if (res.error) return { ok: false, error: self._authMsg(res.error) };
         var uid = res.data && res.data.user && res.data.user.id;
         if (!uid) return { ok: false, error: 'Could not create the account. Please try again.' };
-        // Class code is OPTIONAL: no code = an Explorer (plays everything, not on the
-        // competition leaderboard). Store NULL, never '' (the DB check rejects empty).
-        return self._upsertProfile(uid, { alias: username, full_name: fullName, class_code: classCode ? classCode : null, role: 'student' })
-          .then(function (up) {
-            if (up && up.error) return { ok: false, error: 'Account made, but saving your details failed. Tell your teacher.' };
-            self._writeMirror({ alias: username, classCode: classCode || '', fullName: fullName, role: 'student', avatar: avatar || '' });
-            // Avatar is saved best-effort (separate write) so it never blocks sign-up.
-            return _saveAvatarRemote(uid, avatar).then(function () { return { ok: true }; });
-          });
+        // Class code is OPTIONAL. If given, validate it against a real class (we're
+        // authenticated now) and keep its name for display; an unknown code is dropped
+        // so the account is still created — as an Explorer — rather than joining nothing.
+        var lookup = classCode
+          ? c.rpc('class_by_code', { p_code: classCode }).then(
+              function (r) { return { name: (r.data && r.data[0] && r.data[0].name) || null, rpcOk: !r.error }; },
+              function () { return { name: null, rpcOk: false }; })
+          : Promise.resolve({ name: null, rpcOk: true });
+        return lookup.then(function (res) {
+          // Migrated + valid → keep code & name; migrated + unknown → Explorer;
+          // not migrated (RPC unavailable) → keep the code unvalidated (old behaviour).
+          var useCode = classCode ? (res.rpcOk ? (res.name ? classCode : null) : classCode) : null;
+          return self._upsertProfile(uid, { alias: username, full_name: fullName, class_code: useCode, role: 'student' })
+            .then(function (up) {
+              if (up && up.error) return { ok: false, error: 'Account made, but saving your details failed. Tell your teacher.' };
+              self._writeMirror({ alias: username, classCode: useCode || '', className: res.name || '', fullName: fullName, role: 'student', avatar: avatar || '' });
+              // Avatar is saved best-effort (separate write) so it never blocks sign-up.
+              return _saveAvatarRemote(uid, avatar).then(function () { return { ok: true, classInvalid: !!(classCode && res.rpcOk && !res.name) }; });
+            });
+        });
       }).catch(function () { return { ok: false, error: 'Something went wrong creating the account.' }; });
     },
     logIn: function (username, password) {
@@ -142,6 +153,12 @@
           return c.from('profiles').select('avatar').eq('id', uid).maybeSingle().then(function (av) {
             if (av && av.data && av.data.avatar) mirror.avatar = av.data.avatar;
           }, function () {}).then(function () {
+            // Resolve the class NAME for display (best-effort; matching still uses the code).
+            if (!mirror.classCode) return;
+            return c.rpc('class_by_code', { p_code: mirror.classCode }).then(function (cr) {
+              if (cr && cr.data && cr.data[0]) mirror.className = cr.data[0].name;
+            }, function () {});
+          }).then(function () {
             self._writeMirror(mirror);
             return { ok: true, role: role };
           });
@@ -163,17 +180,32 @@
     joinClass: function (code) {
       var c = sb(), self = this, clean = String(code || '').trim();
       if (!c) return Promise.resolve({ ok: false, error: 'No connection — try again when you are online.' });
-      return currentUid().then(function (uid) {
-        if (!uid) return { ok: false, error: 'Please sign in again.' };
+      function save(uid, name) {
         return c.from('profiles').update({ class_code: clean ? clean : null, updated_at: new Date().toISOString() }).eq('id', uid).then(function (r) {
           if (r.error) return { ok: false, error: r.error.message || 'Could not save the class code.' };
-          var prof = self.getProfile() || {}; prof.classCode = clean; self._writeMirror(prof);
-          return { ok: true, classCode: clean };
+          var prof = self.getProfile() || {}; prof.classCode = clean; prof.className = clean ? (name || '') : ''; self._writeMirror(prof);
+          return { ok: true, classCode: clean, className: name || '' };
+        });
+      }
+      return currentUid().then(function (uid) {
+        if (!uid) return { ok: false, error: 'Please sign in again.' };
+        if (!clean) return save(uid, '');                     // empty = leave (become an Explorer)
+        // Validate the code against a real class (and fetch its name) before joining.
+        // If the lookup RPC isn't available yet (pre-migration), fall back to joining
+        // without validation so the feature still works.
+        return c.rpc('class_by_code', { p_code: clean }).then(function (r) {
+          if (r.error) return save(uid, '');
+          var name = (r.data && r.data[0] && r.data[0].name) || null;
+          if (!name) return { ok: false, error: 'That class code doesn’t exist — check it with your teacher.' };
+          return save(uid, name);
         });
       }).catch(function () { return { ok: false, error: 'Could not save the class code.' }; });
     },
     // True if the logged-in student is competing (has a class code) vs just exploring.
     isCompetitor: function () { var p = this.getProfile(); return !!(p && p.classCode); },
+    // Class NAME for display (falls back to the code, then ''). The DB still stores
+    // the code for matching; the name is resolved on join/login for a friendly label.
+    classDisplay: function () { var p = this.getProfile() || {}; return p.className || p.classCode || ''; },
     _upsertProfile: function (uid, fields) {
       var c = sb(); if (!c) return Promise.resolve({});
       var row = { id: uid, updated_at: new Date().toISOString() };

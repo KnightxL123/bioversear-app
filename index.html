@@ -473,7 +473,10 @@
       if (err) { showErr('signup-error', err); return; }
       showErr('signup-error', ''); busy(this, true, 'Creating…');
       BV.signUp(name.trim(), u.trim(), p, code.trim().replace(/\s+/g, ' '), suAvatar).then(function (r) {
-        if (r.ok) { location.href = 'dashboard.html'; }
+        if (r.ok) {
+          if (r.classInvalid) alert('Your account is ready! But that class code wasn’t found, so you’re exploring solo for now — you can join a class any time from your Profile.');
+          location.href = 'dashboard.html';
+        }
         else { showErr('signup-error', r.error); busy($('signup-form'), false); }
       });
     });

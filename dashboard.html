@@ -78,7 +78,9 @@
 
   <nav id="bottomnav"></nav>
 
+  <script src="assets/vendor/supabase.min.js"></script>
   <script src="topics.js"></script>
+  <script src="config.js"></script>
   <script src="app.js"></script>
   <script>
   (function () {
@@ -167,7 +169,7 @@
       jMsg.className = 'form-msg';
       if (code) {
         $('join-title').textContent = 'Your competition';
-        $('join-desc').innerHTML = 'You’re competing in class <b>' + BV.escape(code) + '</b> — you’re on the class leaderboard.';
+        $('join-desc').innerHTML = 'You’re competing in class <b>' + BV.escape(BV.classDisplay()) + '</b> — you’re on the class leaderboard.';
         $('join-code').hidden = true; $('join-do').hidden = true; $('join-leave').hidden = false;
       } else {
         $('join-title').textContent = 'Join a competition';
