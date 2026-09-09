@@ -40,6 +40,18 @@
     </div>
     <p class="acct-note">Your name is private — only your teacher can see it. Classmates see only your username.</p>
 
+    <h2 class="section-title">Competition</h2>
+    <div class="acct-card">
+      <p class="comp-state" id="comp-state">—</p>
+      <div class="field" id="comp-join-wrap">
+        <label for="comp-code">Class code <span class="hint">— from your teacher</span></label>
+        <input id="comp-code" type="text" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" maxlength="40" placeholder="e.g. 7-RIZAL">
+      </div>
+      <div class="form-msg" id="comp-msg"></div>
+      <button class="btn" type="button" id="comp-join">Join competition</button>
+      <button class="btn secondary" type="button" id="comp-leave" hidden style="margin-top:8px">Leave competition</button>
+    </div>
+
     <h2 class="section-title">Your explorer</h2>
     <div class="acct-card">
       <div class="av-strip" id="p-avatars"></div>
@@ -137,6 +149,43 @@
       });
     });
     ['pw-new', 'pw-confirm'].forEach(function (id) { $(id).addEventListener('input', function () { msg.className = 'form-msg'; }); });
+
+    // ---- Competition: join or leave a class (Model A) ----
+    var compMsg = $('comp-msg');
+    function paintComp() {
+      var code = (BV.getProfile() || {}).classCode || '';
+      $('comp-join-wrap').hidden = !!code;
+      $('comp-join').hidden = !!code;
+      $('comp-leave').hidden = !code;
+      $('comp-state').innerHTML = code
+        ? 'You’re competing in class <b>' + BV.escape(code) + '</b> — you appear on the class leaderboard.'
+        : 'You’re an <b>Explorer</b> — playing solo, not on any leaderboard. Enter a class code to join a competition.';
+    }
+    paintComp();
+    $('comp-join').addEventListener('click', function () {
+      var code = $('comp-code').value.trim().replace(/\s+/g, ' ');
+      if (!code) { compMsg.className = 'form-msg show err'; compMsg.textContent = 'Enter a class code first.'; return; }
+      var btn = this; btn.disabled = true; var t = btn.textContent; btn.textContent = 'Joining…';
+      BV.joinClass(code).then(function (r) {
+        btn.disabled = false; btn.textContent = t;
+        if (r.ok) {
+          compMsg.className = 'form-msg show ok'; compMsg.textContent = 'Joined! You’re now on the competition board.';
+          $('p-class').textContent = code; $('a-class').textContent = code; paintComp();
+        } else { compMsg.className = 'form-msg show err'; compMsg.textContent = r.error; }
+      });
+    });
+    $('comp-leave').addEventListener('click', function () {
+      if (!confirm('Leave the competition? You’ll go back to exploring solo.')) return;
+      var btn = this; btn.disabled = true; var t = btn.textContent; btn.textContent = 'Leaving…';
+      BV.joinClass('').then(function (r) {
+        btn.disabled = false; btn.textContent = t;
+        if (r.ok) {
+          compMsg.className = 'form-msg show ok'; compMsg.textContent = 'You’re exploring solo again.';
+          $('p-class').textContent = '—'; $('a-class').textContent = '—'; $('comp-code').value = ''; paintComp();
+        } else { compMsg.className = 'form-msg show err'; compMsg.textContent = r.error; }
+      });
+    });
+    $('comp-code').addEventListener('input', function () { compMsg.className = 'form-msg'; });
 
     $('signout').addEventListener('click', function () {
       if (confirm('Log out on this device?')) BV.signOut();

@@ -103,10 +103,12 @@
         if (res.error) return { ok: false, error: self._authMsg(res.error) };
         var uid = res.data && res.data.user && res.data.user.id;
         if (!uid) return { ok: false, error: 'Could not create the account. Please try again.' };
-        return self._upsertProfile(uid, { alias: username, full_name: fullName, class_code: classCode, role: 'student' })
+        // Class code is OPTIONAL: no code = an Explorer (plays everything, not on the
+        // competition leaderboard). Store NULL, never '' (the DB check rejects empty).
+        return self._upsertProfile(uid, { alias: username, full_name: fullName, class_code: classCode ? classCode : null, role: 'student' })
           .then(function (up) {
             if (up && up.error) return { ok: false, error: 'Account made, but saving your details failed. Tell your teacher.' };
-            self._writeMirror({ alias: username, classCode: classCode, fullName: fullName, role: 'student', avatar: avatar || '' });
+            self._writeMirror({ alias: username, classCode: classCode || '', fullName: fullName, role: 'student', avatar: avatar || '' });
             // Avatar is saved best-effort (separate write) so it never blocks sign-up.
             return _saveAvatarRemote(uid, avatar).then(function () { return { ok: true }; });
           });
@@ -143,6 +145,23 @@
         return res.error ? { ok: false, error: self._authMsg(res.error) } : { ok: true };
       }).catch(function () { return { ok: false, error: 'Could not change the password.' }; });
     },
+    // Join (or leave) a competition by setting the class code on the logged-in
+    // student's own profile (RLS allows self-update). Empty code = become an
+    // Explorer again (stored as NULL — the DB check rejects '').
+    joinClass: function (code) {
+      var c = sb(), self = this, clean = String(code || '').trim();
+      if (!c) return Promise.resolve({ ok: false, error: 'No connection — try again when you are online.' });
+      return currentUid().then(function (uid) {
+        if (!uid) return { ok: false, error: 'Please sign in again.' };
+        return c.from('profiles').update({ class_code: clean ? clean : null, updated_at: new Date().toISOString() }).eq('id', uid).then(function (r) {
+          if (r.error) return { ok: false, error: r.error.message || 'Could not save the class code.' };
+          var prof = self.getProfile() || {}; prof.classCode = clean; self._writeMirror(prof);
+          return { ok: true, classCode: clean };
+        });
+      }).catch(function () { return { ok: false, error: 'Could not save the class code.' }; });
+    },
+    // True if the logged-in student is competing (has a class code) vs just exploring.
+    isCompetitor: function () { var p = this.getProfile(); return !!(p && p.classCode); },
     _upsertProfile: function (uid, fields) {
       var c = sb(); if (!c) return Promise.resolve({});
       var row = { id: uid, updated_at: new Date().toISOString() };
@@ -239,9 +258,11 @@
       var all = this._rall(), mine = this._mine(all); if (!mine) return;
       mine.topics[topicId] = mine.topics[topicId] || {};
       var prev = mine.topics[topicId][diff];
-      if (!prev || typeof prev.score !== 'number' || attempt.score >= prev.score) {
-        mine.topics[topicId][diff] = attempt;
-      }
+      function tm(a) { return (a && typeof a.time_ms === 'number') ? a.time_ms : Infinity; }
+      // Keep the best: higher score wins; on an equal score, the FASTER attempt wins.
+      var better = !prev || typeof prev.score !== 'number' || attempt.score > prev.score ||
+        (attempt.score === prev.score && tm(attempt) < tm(prev));
+      if (better) mine.topics[topicId][diff] = attempt;
       this._rsave(all);
       this._syncAttempt(topicId, diff, mine.topics[topicId][diff]);
     },
@@ -253,12 +274,22 @@
         if (!uid) return;
         // NB: return the builder so it is actually sent (supabase-js queries are
         // lazy — they only fire when .then()/await is chained).
-        return c.from('attempts').upsert({
+        var base = {
           user_id: uid, topic_id: topicId, difficulty: diff,
           score: a.score, max: a.max, correct: a.correct, total: a.total,
           answers: a.answers || [], flagged: a.flagged || [],
           updated_at: new Date().toISOString()
-        }, { onConflict: 'user_id,topic_id,difficulty' });
+        };
+        var row = {}; for (var k in base) row[k] = base[k];
+        if (typeof a.time_ms === 'number') row.time_ms = a.time_ms; // speed tie-break
+        return c.from('attempts').upsert(row, { onConflict: 'user_id,topic_id,difficulty' }).then(function (r) {
+          // Pre-migration safety: if the time_ms column isn't there yet, retry
+          // without it so scores still sync.
+          if (r && r.error && row.time_ms != null) {
+            return c.from('attempts').upsert(base, { onConflict: 'user_id,topic_id,difficulty' });
+          }
+          return r;
+        });
       }).catch(function () {});
     },
     getAttempts: function (topicId) {
@@ -286,13 +317,15 @@
     leaderboard: function () {
       var all = this._rall(), DIFFS = ['easy', 'medium', 'hard'];
       return Object.keys(all).map(function (alias) {
-        var topics = (all[alias] && all[alias].topics) || {}, total = 0;
+        var topics = (all[alias] && all[alias].topics) || {}, total = 0, time = 0;
         Object.keys(topics).forEach(function (tid) {
           var t = topics[tid];
-          DIFFS.forEach(function (d) { if (t[d] && typeof t[d].score === 'number') total += t[d].score; });
+          DIFFS.forEach(function (d) {
+            if (t[d] && typeof t[d].score === 'number') { total += t[d].score; time += (typeof t[d].time_ms === 'number' ? t[d].time_ms : 0); }
+          });
         });
-        return { alias: alias, score: total, badges: ((all[alias] && all[alias].badges) || []).length };
-      }).sort(function (a, b) { return b.score - a.score; });
+        return { alias: alias, score: total, time: time, badges: ((all[alias] && all[alias].badges) || []).length };
+      }).sort(function (a, b) { return (b.score - a.score) || (a.time - b.time) || (a.alias < b.alias ? -1 : a.alias > b.alias ? 1 : 0); });
     },
     // Global leaderboard from Supabase (every device/class). Same row shape as
     // leaderboard() plus classCode; falls back to the on-device list if offline.
@@ -303,7 +336,7 @@
         return c.rpc('get_leaderboard').then(function (r) {
           if (r.error || !r.data) return self.leaderboard();
           return r.data.map(function (row) {
-            return { alias: row.alias, classCode: row.class_code, score: Number(row.score) || 0, badges: Number(row.badges) || 0, avatar: row.avatar || '' };
+            return { alias: row.alias, classCode: row.class_code, score: Number(row.score) || 0, badges: Number(row.badges) || 0, avatar: row.avatar || '', time: Number(row.time_ms) || 0 };
           });
         });
       }).catch(function () { return self.leaderboard(); });
@@ -319,7 +352,7 @@
           if (r.error || !r.data) return null;
           return r.data.map(function (row) {
             return { alias: row.alias, classCode: row.class_code, topicId: row.topic_id,
-                     score: Number(row.score) || 0, passed: !!row.passed, avatar: row.avatar || '' };
+                     score: Number(row.score) || 0, passed: !!row.passed, avatar: row.avatar || '', time: Number(row.time_ms) || 0 };
           });
         });
       }).catch(function () { return null; });

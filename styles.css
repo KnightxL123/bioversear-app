@@ -109,6 +109,11 @@ body {
   background-repeat: no-repeat; background-position: right 10px center; background-size: 18px;
 }
 .lb-scope { font-size: 13px; color: var(--muted); margin: 0 2px 16px; }
+.lb-explorer { background: var(--primary-tint); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; margin: 0 0 16px; }
+.lb-explorer-badge { display: inline-block; font-size: 12px; font-weight: 800; color: var(--primary); background: var(--surface); border: 1px solid var(--line); padding: 3px 10px; border-radius: 999px; margin-bottom: 6px; }
+.lb-explorer p { margin: 0; font-size: 13px; line-height: 1.5; color: var(--ink); }
+.lb-explorer a { color: var(--primary); font-weight: 700; }
+.comp-state { margin: 0 0 12px; font-size: 13.5px; line-height: 1.5; color: var(--ink); }
 .lb-pass { font-size: 15px; font-weight: 800; color: var(--accent); }
 .lb-code {
   flex: 0 0 auto; font-size: 10.5px; font-weight: 700; color: var(--muted); background: var(--surface-2);

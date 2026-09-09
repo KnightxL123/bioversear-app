@@ -273,8 +273,11 @@
       hideBannerNow(); clearConfetti();
       var maxPts = Q.length * PTS;
       var passed = maxPts ? (score >= maxPts * 0.6) : false;
+      // Total "thinking time" = sum of per-question answer times. Powers the
+      // leaderboard's speed tie-break (faster wins when scores are equal).
+      var timeMs = answers.reduce(function (s, a) { return s + (a.ms || 0); }, 0);
       var attempt = { diff: diff, score: score, max: maxPts, correct: correctCount, total: Q.length,
-                      answers: answers, flagged: Object.keys(flagged), at: new Date().toISOString() };
+                      answers: answers, flagged: Object.keys(flagged), at: new Date().toISOString(), time_ms: timeMs };
       BV.saveAttempt(t.id, diff, attempt);
       BV.stashReview(t.id, diff, attempt);
       $('review-btn').href = 'review.html?topic=' + encodeURIComponent(t.id) + '&diff=' + diff;
