@@ -16,15 +16,14 @@
 </head>
 <body>
   <div class="app has-nav">
-    <header class="home-head">
-      <a class="logo" href="profile.html" aria-label="Open your profile" title="Your profile">
-        <svg viewBox="0 0 24 24" fill="none"><g stroke="#fff" stroke-width="1.4" fill="none"><ellipse cx="12" cy="12" rx="10" ry="4"/><ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(60 12 12)"/><ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(120 12 12)"/></g><circle cx="12" cy="12" r="2" fill="#fff"/></svg>
-      </a>
-      <div class="who">
-        <div class="hi">Hi, <span id="hi-alias">student</span></div>
-        <div class="tagline">Keep learning, keep exploring!</div>
-      </div>
-      <div class="home-chips">
+    <header class="pf-head" style="margin-bottom:12px">
+      <h1 class="page-h">Home</h1>
+      <p class="pf-sub">Keep learning, keep exploring!</p>
+    </header>
+
+    <section class="pf-hero home-hero">
+      <img class="pf-hero-bg" src="assets/splash/tarsier-hero-scene.webp" alt="" aria-hidden="true">
+      <div class="home-hero-chips">
         <button class="iconbtn" id="join-btn" type="button" aria-label="Join a competition" title="Join a competition">
           <svg viewBox="0 0 24 24" fill="none"><path d="M5 21V4.2M5 4.2h11.2l-2.2 3.3 2.2 3.3H5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
@@ -35,7 +34,14 @@
           <svg viewBox="0 0 24 24" fill="none"><path d="M8 4h8v4a4 4 0 01-8 0V4z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M8 5H5v2a3 3 0 003 3M16 5h3v2a3 3 0 01-3 3M9 20h6M12 12v4M9.5 20v-1a2.5 2.5 0 015 0v1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </a>
       </div>
-    </header>
+      <div class="pf-hero-card">
+        <a class="home-hero-av" id="home-av" href="profile.html" aria-label="Your profile">?</a>
+        <div class="pf-hero-info">
+          <div class="pf-hero-name">Hi, <span id="hi-alias">student</span>! 👋</div>
+          <div class="pf-hero-class">Keep learning, keep exploring!</div>
+        </div>
+      </div>
+    </section>
 
     <div class="home-stats">
       <div class="hstat">
@@ -88,11 +94,11 @@
     };
 
     $('hi-alias').textContent = profile.alias;
-    // Personalise the header with the student's chosen avatar (falls back to the
-    // BioVerseAR mark for accounts made before avatars existed).
-    var logoEl = document.querySelector('.home-head .logo');
+    // Personalise the hero with the student's chosen avatar (falls back to their
+    // initial for accounts made before avatars existed).
+    var avEl = $('home-av');
     var headAv = profile.avatar && BV.avatarSvg(profile.avatar);
-    if (headAv && logoEl) { logoEl.classList.add('is-avatar'); logoEl.innerHTML = headAv; }
+    if (avEl) avEl.innerHTML = headAv || (profile.alias.trim()[0] || '?').toUpperCase();
     var stats = BV.overallStats();
     $('stat-points').textContent = stats.points;
     $('stat-badges').textContent = stats.badges + '/' + stats.total;
