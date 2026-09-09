@@ -92,7 +92,18 @@ window.TOPICS = [
       { id: 3, title: 'Neutron',         position: '-0.01665 0.03203 -0.01047',  normal: '-0.03154 0.73101 -0.68164', body: "A particle in the nucleus with no electric charge. It adds mass and helps hold the nucleus together." },
       { id: 4, title: 'Proton',          position: '-0.00120 0.03163 -0.02657',  normal: '-0.21715 0.80064 -0.55840', body: "A positively charged particle in the nucleus. The number of protons decides which element the atom is." }
     ] },
-  { id: 'force-motion', name: 'Force & Motion',         badge: 'Friction Fighter',phase: 2, ready: true, model: 'assets/models/pendulum.glb', animate: true, scene: 'lab' },
+  { id: 'force-motion', name: 'Force & Motion',         badge: 'Friction Fighter',phase: 2, ready: true, model: 'assets/models/pendulum.glb', scene: 'lab',
+    // Triple pendulum. Loads PAUSED (every arm swings, so labels would drift) — Play
+    // spins it. Bodies tie each part to the Force & Motion quiz concepts; drafts for
+    // teacher review. Titles are the user's; the "combs/sector" are the linked arcs.
+    annotations: [
+      { id: 1, title: 'Top Comb',     position: '-0.00314 0.11761 -0.10931', normal: '-0.23108 0.35219 -0.90695', body: "Part of the top arm of the pendulum. It swings on a pivot, and because all three arms are linked, its motion passes down to the arms below it." },
+      { id: 2, title: 'Metal Sector', position: '-0.08555 0.07106 0.00969', normal: '0.97880 0.06778 -0.19327', body: "A curved metal arc that guides the swinging motion. The arms sweep along arcs like this as gravity and their own momentum carry them." },
+      { id: 3, title: 'Inner Sphere', position: '-0.01042 0.07704 0.00802', normal: '-0.54737 -0.22345 0.80651', body: "A heavy metal ball — a mass of the pendulum. Gravity pulls it down with a force W = mg, and its inertia keeps it moving once it has been set going." },
+      { id: 4, title: 'Bottom Comb',  position: '0.03244 0.05376 0.06292', normal: '-0.16733 0.11156 -0.97957', body: "Part of the lowest arm. Because the arms are all linked, a tiny change at the top makes the bottom swing wildly — this is why a triple pendulum is famous for chaotic motion." },
+      { id: 5, title: 'Base',         position: '-0.05587 -0.01968 0.11605', normal: '-0.00000 0.97860 -0.20580', body: "The heavy stand that anchors the pendulum. Its large mass gives it plenty of inertia, so it stays still while the arms swing above it." },
+      { id: 6, title: 'Crank Handle', position: '0.20024 0.06733 0.00534', normal: '0.03026 -0.70768 0.70588', body: "Turn this to set the pendulum going — the input push (a force) that gives the arms the energy they need to start moving." }
+    ] },
   // `animate: true` = auto-play the model's animation in the AR view. Leave it off
   // for models whose labels must stay locked to parts (e.g. the solar-system orrery,
   // whose planets orbit) — those load paused so hotspots sit on the right part, and a
