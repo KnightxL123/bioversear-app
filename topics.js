@@ -90,5 +90,5 @@ window.TOPICS = [
   // for models whose labels must stay locked to parts (e.g. the solar-system orrery,
   // whose planets orbit) — those load paused so hotspots sit on the right part, and a
   // Play/Pause control lets students watch the motion when they want.
-  { id: 'energy',       name: 'Energy',                 badge: 'Spark Starter',   phase: 2, ready: true, model: null, scene: 'energy' }
+  { id: 'energy',       name: 'Energy',                 badge: 'Spark Starter',   phase: 2, ready: true, model: 'assets/models/wind_turbine.glb', animate: true, scene: 'energy' }
 ];
