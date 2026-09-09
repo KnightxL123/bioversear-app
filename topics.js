@@ -84,7 +84,14 @@ window.TOPICS = [
       { id: 8, title: 'Uranus',  position: '-0.15025 0.03283 -0.10937', normal: '0.28298 0.91429 0.28983',  body: "An icy giant that spins on its side, so it rolls around the Sun like a ball. Methane gas gives it a blue-green colour." },
       { id: 9, title: 'Neptune', position: '-0.16226 0.00351 0.14341',  normal: '0.80275 -0.30780 -0.51073', body: "The farthest planet from the Sun — a cold, windy ice giant with the fastest winds in the solar system." }
     ] },
-  { id: 'matter',       name: 'Matter',                 badge: 'Particle Picker', phase: 2, ready: true, model: 'assets/models/atom.glb', scene: 'matter' },
+  { id: 'matter',       name: 'Matter',                 badge: 'Particle Picker', phase: 2, ready: true, model: 'assets/models/atom.glb', scene: 'matter',
+    // Pins placed via annotate.html on the atom. Bodies are drafts — teacher to review/replace.
+    annotations: [
+      { id: 1, title: 'Electron Orbits', position: '0.00022 0.09304 -0.08195',  normal: '-0.99999 0.00539 0.00064', body: "The paths the electrons follow as they move around the nucleus. Each orbit, or shell, sits at a set distance from the centre." },
+      { id: 2, title: 'Electron',        position: '-0.03141 0.01110 -0.11107',  normal: '-0.61232 -0.75020 -0.24952', body: "A tiny, negatively charged particle that zips around the nucleus. It is far lighter than a proton or a neutron." },
+      { id: 3, title: 'Neutron',         position: '-0.01665 0.03203 -0.01047',  normal: '-0.03154 0.73101 -0.68164', body: "A particle in the nucleus with no electric charge. It adds mass and helps hold the nucleus together." },
+      { id: 4, title: 'Proton',          position: '-0.00120 0.03163 -0.02657',  normal: '-0.21715 0.80064 -0.55840', body: "A positively charged particle in the nucleus. The number of protons decides which element the atom is." }
+    ] },
   { id: 'force-motion', name: 'Force & Motion',         badge: 'Friction Fighter',phase: 2, ready: true, model: 'assets/models/pendulum.glb', animate: true, scene: 'lab' },
   // `animate: true` = auto-play the model's animation in the AR view. Leave it off
   // for models whose labels must stay locked to parts (e.g. the solar-system orrery,
