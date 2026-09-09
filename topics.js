@@ -97,5 +97,14 @@ window.TOPICS = [
   // for models whose labels must stay locked to parts (e.g. the solar-system orrery,
   // whose planets orbit) — those load paused so hotspots sit on the right part, and a
   // Play/Pause control lets students watch the motion when they want.
-  { id: 'energy',       name: 'Energy',                 badge: 'Spark Starter',   phase: 2, ready: true, model: 'assets/models/wind_turbine.glb', animate: true, scene: 'energy' }
+  { id: 'energy',       name: 'Energy',                 badge: 'Spark Starter',   phase: 2, ready: true, model: 'assets/models/wind_turbine.glb', scene: 'energy',
+    // Animated (spinning blades) but loads PAUSED so the labels stay on their part
+    // (Play button spins it). Pins via annotate.html; bodies are drafts — teacher to review.
+    annotations: [
+      { id: 1, title: 'Blades',    position: '-0.00285 0.41247 0.02689', normal: '-0.66732 -0.00113 0.74477', body: "The three long arms that catch the wind. As the wind pushes them, they spin the rotor around." },
+      { id: 2, title: 'Rotor Hub', position: '-0.00244 0.29086 0.04006', normal: '-0.41167 -0.43746 0.79947', body: "The centre piece the blades attach to. It turns as the blades spin and passes that motion to the shaft inside." },
+      { id: 3, title: 'Nacelle',   position: '-0.00367 0.30836 0.01110', normal: '0.00000 0.99830 -0.05827', body: "The housing at the top of the tower. It holds the gearbox, generator, and controls that turn spinning motion into electricity." },
+      { id: 4, title: 'Generator', position: '0.01089 0.28155 -0.00477', normal: '0.92073 -0.39020 0.00000', body: "The part that converts the spinning motion into electrical energy — where the wind's energy becomes electricity." },
+      { id: 5, title: 'Tower',     position: '-0.00687 0.20165 0.00058', normal: '-1.00000 0.00000 0.00000', body: "The tall pole that holds the turbine high up, where the wind is stronger and steadier." }
+    ] }
 ];
