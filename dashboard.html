@@ -17,14 +17,17 @@
 <body>
   <div class="app has-nav">
     <header class="home-head">
-      <div class="logo" aria-hidden="true">
+      <a class="logo" href="profile.html" aria-label="Open your profile" title="Your profile">
         <svg viewBox="0 0 24 24" fill="none"><g stroke="#fff" stroke-width="1.4" fill="none"><ellipse cx="12" cy="12" rx="10" ry="4"/><ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(60 12 12)"/><ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(120 12 12)"/></g><circle cx="12" cy="12" r="2" fill="#fff"/></svg>
-      </div>
+      </a>
       <div class="who">
         <div class="hi">Hi, <span id="hi-alias">student</span></div>
         <div class="tagline">Keep learning, keep exploring!</div>
       </div>
       <div class="home-chips">
+        <button class="iconbtn" id="join-btn" type="button" aria-label="Join a competition" title="Join a competition">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M5 21V4.2M5 4.2h11.2l-2.2 3.3 2.2 3.3H5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
         <button class="iconbtn" id="help-btn" type="button" aria-label="How this works" title="How this works">
           <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.6"/><path d="M9.6 9.3a2.5 2.5 0 1 1 3.3 2.4c-.7.3-1.4.9-1.4 1.8v.4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="16.7" r="0.7" fill="currentColor"/></svg>
         </button>
@@ -51,6 +54,20 @@
     <div class="topics" id="topics" role="list"></div>
 
     <div class="spacer-grow"></div>
+  </div>
+
+  <!-- Join / manage competition (opened from the header flag icon) -->
+  <div class="modal-ov" id="join-modal" hidden>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="join-title">
+      <button class="modal-x" id="join-close" type="button" aria-label="Close">&times;</button>
+      <div class="modal-ic" aria-hidden="true">🏁</div>
+      <h3 id="join-title">Join a competition</h3>
+      <p class="modal-desc" id="join-desc">Enter the class code from your teacher to compete on the leaderboard.</p>
+      <input class="modal-input" id="join-code" type="text" autocomplete="off" autocapitalize="characters" autocorrect="off" spellcheck="false" maxlength="40" placeholder="e.g. 7-RIZAL">
+      <div class="form-msg" id="join-msg"></div>
+      <button class="btn" id="join-do" type="button">Join competition</button>
+      <button class="btn secondary" id="join-leave" type="button" hidden style="margin-top:8px">Leave competition</button>
+    </div>
   </div>
 
   <nav id="bottomnav"></nav>
@@ -131,11 +148,60 @@
 
     BV.renderNav('home');
 
+    // ---- Join / manage a competition from the header flag icon ----
+    var jb = $('join-btn'), jm = $('join-modal'), jMsg = $('join-msg');
+    function refreshJoinBtn() {
+      var competing = BV.isCompetitor();
+      jb.classList.toggle('on', competing);
+      jb.setAttribute('title', competing ? 'Your competition' : 'Join a competition');
+      jb.setAttribute('aria-label', competing ? 'Your competition' : 'Join a competition');
+    }
+    function openJoin() {
+      var code = (BV.getProfile() || {}).classCode || '';
+      jMsg.className = 'form-msg';
+      if (code) {
+        $('join-title').textContent = 'Your competition';
+        $('join-desc').innerHTML = 'You’re competing in class <b>' + BV.escape(code) + '</b> — you’re on the class leaderboard.';
+        $('join-code').hidden = true; $('join-do').hidden = true; $('join-leave').hidden = false;
+      } else {
+        $('join-title').textContent = 'Join a competition';
+        $('join-desc').textContent = 'Enter the class code from your teacher to compete on the leaderboard. No code? Keep exploring solo — you can join any time.';
+        $('join-code').hidden = false; $('join-code').value = ''; $('join-do').hidden = false; $('join-leave').hidden = true;
+      }
+      jm.hidden = false;
+    }
+    function closeJoin() { jm.hidden = true; }
+    jb.addEventListener('click', openJoin);
+    $('join-close').addEventListener('click', closeJoin);
+    jm.addEventListener('click', function (e) { if (e.target === jm) closeJoin(); }); // tap backdrop to close
+    $('join-code').addEventListener('input', function () { jMsg.className = 'form-msg'; });
+    $('join-do').addEventListener('click', function () {
+      var code = $('join-code').value.trim().replace(/\s+/g, ' ');
+      if (!code) { jMsg.className = 'form-msg show err'; jMsg.textContent = 'Enter a class code first.'; return; }
+      var btn = this; btn.disabled = true; var t = btn.textContent; btn.textContent = 'Joining…';
+      BV.joinClass(code).then(function (r) {
+        btn.disabled = false; btn.textContent = t;
+        if (r.ok) { jMsg.className = 'form-msg show ok'; jMsg.textContent = 'Joined! You’re on the board.'; refreshJoinBtn(); setTimeout(closeJoin, 900); }
+        else { jMsg.className = 'form-msg show err'; jMsg.textContent = r.error; }
+      });
+    });
+    $('join-leave').addEventListener('click', function () {
+      if (!confirm('Leave the competition? You’ll go back to exploring solo.')) return;
+      var btn = this; btn.disabled = true; var t = btn.textContent; btn.textContent = 'Leaving…';
+      BV.joinClass('').then(function (r) {
+        btn.disabled = false; btn.textContent = t;
+        if (r.ok) { jMsg.className = 'form-msg show ok'; jMsg.textContent = 'You’re exploring solo again.'; refreshJoinBtn(); setTimeout(closeJoin, 900); }
+        else { jMsg.className = 'form-msg show err'; jMsg.textContent = r.error; }
+      });
+    });
+    refreshJoinBtn();
+
     // ---- Guided tour of the home screen (auto on first visit; replay via "?") ----
     var HOME_TOUR = [
       { target: null, title: 'Welcome to BioVerseAR!', text: 'Here’s a quick tour of your home base — tap Next to walk through it.' },
       { target: '.home-stats', title: 'Your progress', text: 'The points and badges you earn show up here and grow as you play.' },
       { target: '#topics .topic', title: 'Explore a topic', text: 'Tap any topic to view it in AR and take its quiz. Each one has its own badge to earn.' },
+      { target: '#join-btn', title: 'Join a competition', text: 'Got a class code from your teacher? Tap the flag to join and compete on the leaderboard. No code? Keep exploring solo.' },
       { target: '#bottomnav', title: 'Find your way', text: 'Jump to your Badges, the Leaderboard, or your Profile from down here anytime.' },
       { target: '#help-btn', title: 'Need this again?', text: 'Tap the “?” any time to replay this tour. Have fun exploring!' }
     ];

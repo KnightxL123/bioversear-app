@@ -114,6 +114,21 @@ body {
 .lb-explorer p { margin: 0; font-size: 13px; line-height: 1.5; color: var(--ink); }
 .lb-explorer a { color: var(--primary); font-weight: 700; }
 .comp-state { margin: 0 0 12px; font-size: 13.5px; line-height: 1.5; color: var(--ink); }
+
+/* Generic centered modal (e.g. Join competition from the home header) */
+.modal-ov { position: fixed; inset: 0; z-index: 80; display: grid; place-items: center; padding: 20px; background: rgba(4,44,83,.55); }
+.modal-ov[hidden] { display: none !important; }
+.modal-card { position: relative; width: 100%; max-width: 340px; background: var(--surface); border-radius: 18px; padding: 24px 20px 20px; box-shadow: 0 18px 50px rgba(4,44,83,.3); text-align: center; }
+.modal-x { position: absolute; top: 8px; right: 10px; border: 0; background: none; font-size: 26px; line-height: 1; color: var(--muted); cursor: pointer; padding: 4px 8px; }
+.modal-ic { font-size: 34px; line-height: 1; margin-bottom: 6px; }
+.modal-card h3 { margin: 0 0 6px; font-size: 18px; }
+.modal-desc { margin: 0 0 14px; font-size: 13.5px; color: var(--muted); line-height: 1.5; }
+.modal-input { width: 100%; font: inherit; font-size: 15px; font-weight: 700; letter-spacing: .04em; text-align: center; text-transform: uppercase; padding: 11px 12px; border: 1.5px solid var(--line); border-radius: 12px; margin-bottom: 8px; background: var(--surface); color: var(--ink); }
+.modal-input[hidden] { display: none !important; }
+.modal-card .btn { width: 100%; }
+/* header flag icon: active tint while competing; tappable avatar */
+.iconbtn.on { color: var(--primary); background: var(--primary-tint); }
+.home-head a.logo { cursor: pointer; text-decoration: none; }
 .lb-pass { font-size: 15px; font-weight: 800; color: var(--accent); }
 .lb-code {
   flex: 0 0 auto; font-size: 10.5px; font-weight: 700; color: var(--muted); background: var(--surface-2);
