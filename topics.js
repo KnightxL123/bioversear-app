@@ -84,7 +84,7 @@ window.TOPICS = [
       { id: 8, title: 'Uranus',  position: '-0.15025 0.03283 -0.10937', normal: '0.28298 0.91429 0.28983',  body: "An icy giant that spins on its side, so it rolls around the Sun like a ball. Methane gas gives it a blue-green colour." },
       { id: 9, title: 'Neptune', position: '-0.16226 0.00351 0.14341',  normal: '0.80275 -0.30780 -0.51073', body: "The farthest planet from the Sun — a cold, windy ice giant with the fastest winds in the solar system." }
     ] },
-  { id: 'matter',       name: 'Matter',                 badge: 'Particle Picker', phase: 2, ready: true, model: null, scene: 'matter' },
+  { id: 'matter',       name: 'Matter',                 badge: 'Particle Picker', phase: 2, ready: true, model: 'assets/models/atom.glb', scene: 'matter' },
   { id: 'force-motion', name: 'Force & Motion',         badge: 'Friction Fighter',phase: 2, ready: true, model: 'assets/models/pendulum.glb', animate: true, scene: 'lab' },
   // `animate: true` = auto-play the model's animation in the AR view. Leave it off
   // for models whose labels must stay locked to parts (e.g. the solar-system orrery,
