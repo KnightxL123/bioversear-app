@@ -16,6 +16,7 @@ window.TOPICS = [
 
     // Attribution is required by the model's CC-BY license — render it in the AR view.
     credit: {
+      what: '3D model & annotations', // this topic's labels are verbatim from the author
       title: 'Animal cell 2.0 — annotated in English',
       author: 'montanna',
       url: 'https://sketchfab.com/3d-models/animal-cell-20-annotated-in-english-0d9f7f4257224975b2ef83a283709b2f',
@@ -44,6 +45,7 @@ window.TOPICS = [
   // ar.html and the hub read `model` directly. Set an `annotations` array when the
   // model has hotspots.
   { id: 'human-cells',  name: 'Human Cells', badge: 'DNA Decycler', phase: 2, ready: true, model: 'assets/models/human_cell.glb', scene: 'cell-cool',
+    credit: { title: 'Human Cell', author: 'markdragan', url: 'https://sketchfab.com/3d-models/human-cell-60ef7d2515b0403986ff9e8b7f234a66', license: 'CC BY 4.0' },
     // Pins placed via annotate.html (positions sampled on our mesh). Bodies are
     // drafts — teacher to review/replace.
     annotations: [
@@ -59,6 +61,7 @@ window.TOPICS = [
       { id: 10, title: 'Ribosomes',                   position: '-0.00153 -0.00303 0.14287',  normal: '-0.51382 0.55702 0.65247',   body: "Tiny factories that read the DNA's instructions and assemble proteins." }
     ] },
   { id: 'life-sciences', name: 'Life Sciences', badge: 'Eco-Explorer', phase: 2, ready: true, model: 'assets/models/plant_cell.glb', scene: 'flora',
+    credit: { title: 'Plant Cell Organelles', author: 'CVallance', url: 'https://sketchfab.com/3d-models/plant-cell-organelles-e61e7bdf8c8449a583b364f05e70289b', license: 'CC BY 4.0' },
     // Pins placed via annotate.html. Bodies are drafts — teacher to review/replace.
     annotations: [
       { id: 1, title: 'Chloroplast',                 position: '0.02451 -0.00968 -0.17203', normal: '-0.19897 0.38923 0.89939', body: "Where photosynthesis happens. It captures sunlight and turns it into food (sugar) for the plant." },
@@ -72,6 +75,7 @@ window.TOPICS = [
       { id: 9, title: 'Cell Membrane',               position: '-0.06314 -0.02075 0.11073', normal: '-0.54989 0.42673 0.71800', body: "A thin barrier just inside the cell wall that controls what enters and leaves the cell." }
     ] },
   { id: 'earth-space',  name: 'Earth & Space Sciences', badge: 'Starlight Scout', phase: 2, ready: true, model: 'assets/models/solar_system.glb', space: true,
+    credit: { title: 'Solar system', author: 'Cybertron B-127', url: 'https://sketchfab.com/3d-models/solar-system-9d8106724a0a4ea8af194535d5957f99', license: 'CC BY 4.0' },
     // Pins placed via annotate.html on the orrery. Bodies are drafts — teacher to review/replace.
     annotations: [
       { id: 1, title: 'Sun',     position: '-0.01313 0.00615 0.00331',  normal: '-0.80622 0.53054 0.26180', body: "The star at the centre of our solar system. Its gravity holds all the planets in orbit, and its light and heat make life on Earth possible." },
@@ -85,6 +89,7 @@ window.TOPICS = [
       { id: 9, title: 'Neptune', position: '-0.16226 0.00351 0.14341',  normal: '0.80275 -0.30780 -0.51073', body: "The farthest planet from the Sun — a cold, windy ice giant with the fastest winds in the solar system." }
     ] },
   { id: 'matter',       name: 'Matter',                 badge: 'Particle Picker', phase: 2, ready: true, model: 'assets/models/atom.glb', scene: 'matter',
+    credit: { title: 'Atom', author: 'arloopa', url: 'https://sketchfab.com/3d-models/atom-6a283d5b19c34e2b8fcfc6907b231aea', license: 'CC BY 4.0' },
     // Pins placed via annotate.html on the atom. Bodies are drafts — teacher to review/replace.
     annotations: [
       { id: 1, title: 'Electron Orbits', position: '0.00022 0.09304 -0.08195',  normal: '-0.99999 0.00539 0.00064', body: "The paths the electrons follow as they move around the nucleus. Each orbit, or shell, sits at a set distance from the centre." },
@@ -93,6 +98,7 @@ window.TOPICS = [
       { id: 4, title: 'Proton',          position: '-0.00120 0.03163 -0.02657',  normal: '-0.21715 0.80064 -0.55840', body: "A positively charged particle in the nucleus. The number of protons decides which element the atom is." }
     ] },
   { id: 'force-motion', name: 'Force & Motion',         badge: 'Friction Fighter',phase: 2, ready: true, model: 'assets/models/pendulum.glb', scene: 'lab',
+    credit: { title: 'Triple Pendulum Mechanism', author: 'trinityscsp', url: 'https://sketchfab.com/3d-models/triple-pendulum-mechanism-2131be1593554a049eb0ac29cb8c6b72', license: 'CC BY 4.0' },
     // Triple pendulum. Loads PAUSED (every arm swings, so labels would drift) — Play
     // spins it. Bodies tie each part to the Force & Motion quiz concepts; drafts for
     // teacher review. Titles are the user's; the "combs/sector" are the linked arcs.
@@ -109,6 +115,7 @@ window.TOPICS = [
   // whose planets orbit) — those load paused so hotspots sit on the right part, and a
   // Play/Pause control lets students watch the motion when they want.
   { id: 'energy',       name: 'Energy',                 badge: 'Spark Starter',   phase: 2, ready: true, model: 'assets/models/wind_turbine.glb', scene: 'energy',
+    credit: { title: 'Animated Wind Turbine', author: 'Glowbox 3D', url: 'https://sketchfab.com/3d-models/animated-wind-turbine-e0678e6615a74ed29c1376a591262159', license: 'CC BY 4.0' },
     // Animated (spinning blades) but loads PAUSED so the labels stay on their part
     // (Play button spins it). Pins via annotate.html; bodies are drafts — teacher to review.
     annotations: [

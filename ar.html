@@ -344,7 +344,7 @@
       var c = document.createElement('p');
       c.className = 'ar-note ar-credit';
       var name = t.credit.url ? '<a href="' + t.credit.url + '" target="_blank" rel="noopener">' + BV.escape(t.credit.title) + '</a>' : BV.escape(t.credit.title);
-      c.innerHTML = '3D model &amp; annotations: ' + name + ' by ' + BV.escape(t.credit.author) + ' — ' + BV.escape(t.credit.license) + '.';
+      c.innerHTML = BV.escape(t.credit.what || '3D model') + ': ' + name + ' by ' + BV.escape(t.credit.author) + ' — ' + BV.escape(t.credit.license) + '.';
       document.querySelector('.app').appendChild(c);
     }
   })();
