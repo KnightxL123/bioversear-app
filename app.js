@@ -66,6 +66,18 @@
     { id: 'kid-glasses', name: 'Data', tag: 'Reads the universe\'s fine print.', svg: '<svg viewBox="0 0 48 48"><rect width="48" height="48" fill="#FDEFD6"/><path d="M11 26a13 13 0 0 1 26 0z" fill="#3A2416"/><circle cx="24" cy="27" r="12.5" fill="#F0C79B"/><path d="M11.5 25a12.5 12.5 0 0 1 25 0 6 6 0 0 0-25 0z" fill="#3A2416"/><g fill="none" stroke="#2A2018" stroke-width="1.7"><circle cx="19.5" cy="26.2" r="3.4"/><circle cx="28.5" cy="26.2" r="3.4"/><path d="M22.9 26.2h2.2M32 25.3l2.4-.6M16 25.3l-2.4-.6"/></g><circle cx="19.5" cy="26.2" r="1.3" fill="#2A2018"/><circle cx="28.5" cy="26.2" r="1.3" fill="#2A2018"/><path d="M20.5 32.5q3.5 2.4 7 0" stroke="#5A3A28" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg>' }
   ];
   var AVATAR_BY_ID = {}; AVATARS.forEach(function (a) { AVATAR_BY_ID[a.id] = a; });
+  // A few personality traits per explorer — shown as chips on the profile, and the
+  // first one becomes the student's "<trait> Explorer" pill.
+  var AVATAR_TRAITS = {
+    'tars-1': ['Curious', 'Brave', 'Observant'],
+    'tars-2': ['Focused', 'Calm', 'Sharp'],
+    'tars-3': ['Playful', 'Quick', 'Eager'],
+    'kid-goggles': ['Clever', 'Precise', 'Bold'],
+    'kid-hat': ['Adventurous', 'Hardy', 'Keen'],
+    'kid-curly': ['Creative', 'Bright', 'Bold'],
+    'kid-scarf': ['Inquisitive', 'Kind', 'Thoughtful'],
+    'kid-glasses': ['Analytical', 'Logical', 'Patient']
+  };
   // Best-effort write of the avatar id to the profile row. Never blocks or breaks
   // sign-up/login: if the `avatar` column isn't in the DB yet, the error is ignored
   // (the choice still lives in the local mirror and shows on this device).
@@ -410,6 +422,7 @@
     avatarSvg: function (id) { var a = AVATAR_BY_ID[id]; return a ? a.svg : ''; },
     avatarName: function (id) { var a = AVATAR_BY_ID[id]; return a ? a.name : ''; },
     avatarTag: function (id) { var a = AVATAR_BY_ID[id]; return a ? a.tag : ''; },
+    avatarTraits: function (id) { return AVATAR_TRAITS[id] || []; },
     defaultAvatar: function () { return AVATARS[0].id; },
     // Change the logged-in student's avatar: mirror first (instant UI), then a
     // best-effort DB write. Always resolves ok — a failed sync is non-fatal.
