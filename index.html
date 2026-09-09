@@ -503,6 +503,12 @@
     // ---- Boot: already logged in on this device? ----
     var m = loadMirror();
     if (m && m.alias) { renderWelcome(m); } else { setMode('login'); setup.hidden = false; }
+    // Deep-link from a class QR (index.html?class=CODE): open student sign-up with
+    // the class code pre-filled so scanning a teacher's QR joins that competition.
+    (function () {
+      var cc = new URLSearchParams(location.search).get('class');
+      if (cc && (!m || !m.alias)) { $('su-code').value = cc.trim().slice(0, 40); setMode('signup'); }
+    })();
   })();
   </script>
 

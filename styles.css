@@ -126,6 +126,10 @@ body {
 .modal-input { width: 100%; font: inherit; font-size: 15px; font-weight: 700; letter-spacing: .04em; text-align: center; text-transform: uppercase; padding: 11px 12px; border: 1.5px solid var(--line); border-radius: 12px; margin-bottom: 8px; background: var(--surface); color: var(--ink); }
 .modal-input[hidden] { display: none !important; }
 .modal-card .btn { width: 100%; }
+.qr-box { margin: 8px auto 12px; width: 200px; max-width: 100%; background: #fff; border-radius: 12px; padding: 8px; }
+.qr-box svg { width: 100%; height: auto; display: block; }
+.qr-code-line { font-size: 13px; color: var(--muted); margin-bottom: 14px; }
+.qr-code-line b { color: var(--primary); letter-spacing: .06em; font-size: 15px; }
 /* header flag icon: active tint while competing; tappable avatar */
 .iconbtn.on { color: var(--primary); background: var(--primary-tint); }
 .home-head a.logo { cursor: pointer; text-decoration: none; }
