@@ -240,6 +240,19 @@
       var c = sb(); if (!c) return Promise.resolve([]);
       return c.rpc('get_class_roster', { p_code: code }).then(function (r) { return (r.error || !r.data) ? [] : r.data; }).catch(function () { return []; });
     },
+    // Per-(student, topic) scores for the owning teacher's class — powers the
+    // per-topic insights + per-student drill-down. [] if the RPC isn't migrated yet.
+    getClassScores: function (code) {
+      var c = sb(); if (!c) return Promise.resolve([]);
+      return c.rpc('get_class_scores', { p_code: code }).then(function (r) { return (r.error || !r.data) ? [] : r.data; }).catch(function () { return []; });
+    },
+    renameClass: function (id, name) {
+      var c = sb(); if (!c) return Promise.resolve({ ok: false, error: 'No connection.' });
+      return c.rpc('rename_class', { p_id: id, p_name: name }).then(function (r) {
+        if (r.error) return { ok: false, error: r.error.message };
+        return r.data === true ? { ok: true } : { ok: false, error: 'Could not rename this class.' };
+      }).catch(function () { return { ok: false, error: 'Could not rename this class.' }; });
+    },
     resetStudentPassword: function (studentId, newPassword) {
       var c = sb(); if (!c) return Promise.resolve({ ok: false, error: 'No connection.' });
       return c.rpc('reset_student_password', { p_student: studentId, p_password: newPassword }).then(function (r) {
