@@ -239,7 +239,7 @@
         '<div class="troster-detail" hidden>' +
           '<div class="t-chips">' + chips + '</div>' +
           '<button class="btn secondary troster-reset" type="button">Reset password</button>' +
-          '<form class="troster-pw" hidden><input type="password" maxlength="64" placeholder="new password (min 6)"><button class="btn" type="submit">Set</button><div class="form-msg troster-msg"></div></form>' +
+          '<form class="troster-pw" hidden><input type="password" maxlength="64" placeholder="6+ chars · 1 uppercase · 1 number · 1 symbol"><button class="btn" type="submit">Set</button><div class="form-msg troster-msg"></div></form>' +
         '</div>';
       var detail = row.querySelector('.troster-detail');
       row.querySelector('.troster-head').addEventListener('click', function () { detail.hidden = !detail.hidden; row.classList.toggle('open', !detail.hidden); });
@@ -249,7 +249,11 @@
         e.preventDefault();
         var pw = pwInput.value;
         function show(kind, text) { pwMsg.className = 'form-msg show ' + kind; pwMsg.textContent = text; }
-        if (pw.length < 6) { show('err', 'At least 6 characters.'); return; }
+        var perr = pw.length < 6 ? 'At least 6 characters.'
+          : !/[A-Z]/.test(pw) ? 'Add at least 1 uppercase letter.'
+          : !/[0-9]/.test(pw) ? 'Add at least 1 number.'
+          : !/[^A-Za-z0-9]/.test(pw) ? 'Add at least 1 special character.' : null;
+        if (perr) { show('err', perr); return; }
         var b = pwForm.querySelector('button[type="submit"]'); b.disabled = true;
         BV.resetStudentPassword(info.student_id, pw).then(function (r) {
           b.disabled = false;

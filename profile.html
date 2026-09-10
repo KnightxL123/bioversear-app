@@ -103,7 +103,7 @@
       <svg class="pf-row-go" viewBox="0 0 24 24" fill="none"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </button>
     <form id="pw-form" class="acct-card pf-pw" novalidate hidden>
-      <div class="field"><label for="pw-new">New password</label><input id="pw-new" type="password" autocomplete="new-password" maxlength="64" placeholder="at least 6 characters"></div>
+      <div class="field"><label for="pw-new">New password</label><input id="pw-new" type="password" autocomplete="new-password" maxlength="64" placeholder="6+ chars · 1 uppercase · 1 number · 1 symbol"></div>
       <div class="field"><label for="pw-confirm">Confirm new password</label><input id="pw-confirm" type="password" autocomplete="new-password" maxlength="64" placeholder="type it again"></div>
       <div class="form-msg" id="pw-msg"></div>
       <button class="btn" type="submit">Update password</button>
@@ -259,7 +259,11 @@
     pwForm.addEventListener('submit', function (e) {
       e.preventDefault();
       var np = $('pw-new').value, cf = $('pw-confirm').value;
-      if (np.length < 6) { showMsg('err', 'Password must be at least 6 characters.'); return; }
+      var perr = np.length < 6 ? 'Password must be at least 6 characters.'
+        : !/[A-Z]/.test(np) ? 'Add at least 1 uppercase letter.'
+        : !/[0-9]/.test(np) ? 'Add at least 1 number.'
+        : !/[^A-Za-z0-9]/.test(np) ? 'Add at least 1 special character (e.g. ! @ # ?).' : null;
+      if (perr) { showMsg('err', perr); return; }
       if (np !== cf) { showMsg('err', 'The two passwords do not match.'); return; }
       var btn = this.querySelector('button[type="submit"]'); btn.disabled = true; var t = btn.textContent; btn.textContent = 'Updating…';
       BV.changePassword(np).then(function (r) {

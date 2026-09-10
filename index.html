@@ -280,7 +280,7 @@
           <input id="su-user" type="text" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" maxlength="20">
         </div>
         <div class="field">
-          <label for="su-pass">Password <span class="hint">— at least 6 characters</span></label>
+          <label for="su-pass">Password <span class="hint">— 6+ chars · 1 uppercase · 1 number · 1 symbol</span></label>
           <input id="su-pass" type="password" autocomplete="new-password" maxlength="64">
         </div>
         <div class="field">
@@ -306,7 +306,7 @@
           <input id="te-user" type="text" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" maxlength="20">
         </div>
         <div class="field">
-          <label for="te-pass">Password <span class="hint">— at least 6 characters</span></label>
+          <label for="te-pass">Password <span class="hint">— 6+ chars · 1 uppercase · 1 number · 1 symbol</span></label>
           <input id="te-pass" type="password" autocomplete="new-password" maxlength="64">
         </div>
         <div class="field">
@@ -386,8 +386,16 @@
       if (v.length < 3) return 'Username must be at least 3 characters.';
       if (v.length > 20) return 'Username is too long (max 20).';
       if (!/^[A-Za-z0-9._-]+$/.test(v)) return 'Use letters, numbers, . _ or - (no spaces).'; return null; }
+    // Password rules for CREATING/CHANGING a password (not login): 6+ characters with
+    // at least one uppercase letter, one number, and one special character.
     function vPass(v) { if (!v) return 'Please enter a password.';
-      if (v.length < 6) return 'Password must be at least 6 characters.'; return null; }
+      if (v.length < 6) return 'Password must be at least 6 characters.';
+      if (!/[A-Z]/.test(v)) return 'Add at least 1 uppercase letter.';
+      if (!/[0-9]/.test(v)) return 'Add at least 1 number.';
+      if (!/[^A-Za-z0-9]/.test(v)) return 'Add at least 1 special character (e.g. ! @ # ?).'; return null; }
+    // Login only checks a password was entered — existing accounts must still sign in
+    // even if their password predates the rules above.
+    function vLoginPass(v) { return v ? null : 'Please enter your password.'; }
     function vCode(v) { v = (v || '').trim();
       if (!v) return null; // optional — no code = Explorer (can join a competition later)
       if (v.length > 40) return 'That is too long (max 40 characters).'; return null; }
@@ -420,7 +428,7 @@
     $('login-form').addEventListener('submit', function (e) {
       e.preventDefault();
       var u = $('li-user').value, p = $('li-pass').value;
-      var err = vUser(u) || vPass(p);
+      var err = vUser(u) || vLoginPass(p);
       if (err) { showErr('login-error', err); return; }
       showErr('login-error', ''); busy(this, true, 'Logging in…');
       BV.logIn(u.trim(), p).then(function (r) {
