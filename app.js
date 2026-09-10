@@ -115,25 +115,55 @@
         if (res.error) return { ok: false, error: self._authMsg(res.error) };
         var uid = res.data && res.data.user && res.data.user.id;
         if (!uid) return { ok: false, error: 'Could not create the account. Please try again.' };
-        // Class code is OPTIONAL. If given, validate it against a real class (we're
-        // authenticated now) and keep its name for display; an unknown code is dropped
-        // so the account is still created — as an Explorer — rather than joining nothing.
-        var lookup = classCode
-          ? c.rpc('class_by_code', { p_code: classCode }).then(
-              function (r) { return { name: (r.data && r.data[0] && r.data[0].name) || null, rpcOk: !r.error }; },
-              function () { return { name: null, rpcOk: false }; })
-          : Promise.resolve({ name: null, rpcOk: true });
-        return lookup.then(function (res) {
-          // Migrated + valid → keep code & name; migrated + unknown → Explorer;
-          // not migrated (RPC unavailable) → keep the code unvalidated (old behaviour).
-          var useCode = classCode ? (res.rpcOk ? (res.name ? classCode : null) : classCode) : null;
-          return self._upsertProfile(uid, { alias: username, full_name: fullName, class_code: useCode, role: 'student' })
-            .then(function (up) {
-              if (up && up.error) return { ok: false, error: 'Account made, but saving your details failed. Tell your teacher.' };
-              self._writeMirror({ alias: username, classCode: useCode || '', className: res.name || '', fullName: fullName, role: 'student', avatar: avatar || '' });
-              // Avatar is saved best-effort (separate write) so it never blocks sign-up.
-              return _saveAvatarRemote(uid, avatar).then(function () { return { ok: true, classInvalid: !!(classCode && res.rpcOk && !res.name) }; });
-            });
+        // We MUST have an authenticated session before writing the profile row —
+        // without one, RLS rejects the insert and the account is left half-made
+        // ("saving your details failed"). signUp only returns a session when
+        // "Confirm email" is OFF in Supabase Auth. If it didn't (setting on, or an
+        // earlier sign-up half-finished and left this username taken), sign in with
+        // the same credentials to get a session — which also self-heals the missing
+        // profile row for a previously half-made account.
+        var haveSession = !!(res.data && res.data.session);
+        var ensure = haveSession
+          ? Promise.resolve({ uid: uid })
+          : c.auth.signInWithPassword({ email: emailFor(username), password: password }).then(
+              function (si) {
+                if (si.error || !(si.data && si.data.user)) return { uid: null, err: si.error };
+                return { uid: si.data.user.id };
+              },
+              function (e) { return { uid: null, err: e }; });
+        return ensure.then(function (sess) {
+          if (!sess.uid) {
+            var m = (sess.err && sess.err.message) || '';
+            if (/confirm/i.test(m) && /email/i.test(m))
+              return { ok: false, error: 'Sign-up needs “Confirm email” turned OFF in Supabase Auth. Ask your teacher/admin.' };
+            if (/invalid login credentials/i.test(m))
+              return { ok: false, error: 'That username is already taken — try another.' };
+            return { ok: false, error: 'Could not finish creating the account. Please try again.' };
+          }
+          uid = sess.uid;
+          // Class code is OPTIONAL. If given, validate it against a real class (we're
+          // authenticated now) and keep its name for display; an unknown code is dropped
+          // so the account is still created — as an Explorer — rather than joining nothing.
+          var lookup = classCode
+            ? c.rpc('class_by_code', { p_code: classCode }).then(
+                function (r) { return { name: (r.data && r.data[0] && r.data[0].name) || null, rpcOk: !r.error }; },
+                function () { return { name: null, rpcOk: false }; })
+            : Promise.resolve({ name: null, rpcOk: true });
+          return lookup.then(function (res) {
+            // Migrated + valid → keep code & name; migrated + unknown → Explorer;
+            // not migrated (RPC unavailable) → keep the code unvalidated (old behaviour).
+            var useCode = classCode ? (res.rpcOk ? (res.name ? classCode : null) : classCode) : null;
+            return self._upsertProfile(uid, { alias: username, full_name: fullName, class_code: useCode, role: 'student' })
+              .then(function (up) {
+                if (up && up.error) {
+                  try { console.warn('[BV] profile save failed:', up.error.message || up.error); } catch (e) {}
+                  return { ok: false, error: 'Account made, but saving your details failed. Tell your teacher.' };
+                }
+                self._writeMirror({ alias: username, classCode: useCode || '', className: res.name || '', fullName: fullName, role: 'student', avatar: avatar || '' });
+                // Avatar is saved best-effort (separate write) so it never blocks sign-up.
+                return _saveAvatarRemote(uid, avatar).then(function () { return { ok: true, classInvalid: !!(classCode && res.rpcOk && !res.name) }; });
+              });
+          });
         });
       }).catch(function () { return { ok: false, error: 'Something went wrong creating the account.' }; });
     },
@@ -173,6 +203,24 @@
       return c.auth.updateUser({ password: newPassword }).then(function (res) {
         return res.error ? { ok: false, error: self._authMsg(res.error) } : { ok: true };
       }).catch(function () { return { ok: false, error: 'Could not change the password.' }; });
+    },
+    // Update the student's own real name (full_name). Username (login) and class
+    // are managed elsewhere; this only touches the private name on the profile row.
+    // RLS lets a user update their own row, so this is a simple self-update.
+    updateName: function (fullName) {
+      var c = sb(), self = this, name = String(fullName || '').trim();
+      if (!name) return Promise.resolve({ ok: false, error: 'Please enter your full name.' });
+      if (name.length < 2) return Promise.resolve({ ok: false, error: 'Name is too short.' });
+      if (name.length > 60) return Promise.resolve({ ok: false, error: 'Name is too long.' });
+      if (!c) return Promise.resolve({ ok: false, error: 'No connection — try again when you are online.' });
+      return currentUid().then(function (uid) {
+        if (!uid) return { ok: false, error: 'Please sign in again.' };
+        return c.from('profiles').update({ full_name: name, updated_at: new Date().toISOString() }).eq('id', uid).then(function (r) {
+          if (r.error) return { ok: false, error: r.error.message || 'Could not save your name.' };
+          var prof = self.getProfile() || {}; prof.fullName = name; self._writeMirror(prof);
+          return { ok: true, fullName: name };
+        });
+      }).catch(function () { return { ok: false, error: 'Could not save your name.' }; });
     },
     // Join (or leave) a competition by setting the class code on the logged-in
     // student's own profile (RLS allows self-update). Empty code = become an
@@ -240,8 +288,31 @@
         if (res.error) return { ok: false, error: self._authMsg(res.error) };
         var uid = res.data && res.data.user && res.data.user.id;
         if (!uid) return { ok: false, error: 'Could not create the account. Please try again.' };
+        // Same session guard as student sign-up: RLS needs an authenticated session
+        // before the profile insert. signUp returns one only when "Confirm email" is
+        // OFF; otherwise sign in with the same credentials to establish it.
+        var haveSession = !!(res.data && res.data.session);
+        var ensure = haveSession
+          ? Promise.resolve({ uid: uid })
+          : c.auth.signInWithPassword({ email: emailFor(username), password: password }).then(
+              function (si) {
+                if (si.error || !(si.data && si.data.user)) return { uid: null, err: si.error };
+                return { uid: si.data.user.id };
+              },
+              function (e) { return { uid: null, err: e }; });
+        return ensure.then(function (sess) {
+        if (!sess.uid) {
+          var m = (sess.err && sess.err.message) || '';
+          if (/confirm/i.test(m) && /email/i.test(m))
+            return { ok: false, error: 'Sign-up needs “Confirm email” turned OFF in Supabase Auth. Ask your teacher/admin.' };
+          if (/invalid login credentials/i.test(m))
+            return { ok: false, error: 'That username is already taken — try another.' };
+          return { ok: false, error: 'Could not finish creating the account. Please try again.' };
+        }
+        uid = sess.uid;
         return self._upsertProfile(uid, { alias: username, full_name: fullName, role: 'student' }).then(function (up) {
           if (up && up.error) {
+            try { console.warn('[BV] teacher profile save failed:', up.error.message || up.error); } catch (e) {}
             return c.rpc('delete_self').then(function () { return c.auth.signOut(); }).catch(function () {})
               .then(function () { return { ok: false, error: 'Could not save the account. Please try again.' }; });
           }
@@ -254,6 +325,7 @@
             self._writeMirror({ alias: username, fullName: fullName, classCode: '', role: 'teacher' });
             return { ok: true };
           });
+        });
         });
       }).catch(function () { return { ok: false, error: 'Something went wrong creating the account.' }; });
     },

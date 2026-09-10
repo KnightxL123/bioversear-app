@@ -78,8 +78,11 @@
     </section>
 
     <!-- Account information -->
-    <h2 class="section-title">Account information</h2>
-    <div class="acct-card pf-rows">
+    <div class="acct-head">
+      <h2 class="section-title">Account information</h2>
+      <button class="pf-edit-btn" id="info-edit" type="button" aria-expanded="false">Edit</button>
+    </div>
+    <div class="acct-card pf-rows" id="info-view">
       <div class="pf-row">
         <span class="pf-row-ic"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="3.4" stroke="currentColor" stroke-width="1.6"/><path d="M5 20c0-3.3 3.1-5.5 7-5.5s7 2.2 7 5.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></span>
         <span class="pf-row-k">Name</span><span class="pf-row-v" id="a-name">—</span>
@@ -93,6 +96,27 @@
         <span class="pf-row-k">Class</span><span class="pf-row-v" id="a-class">—</span>
       </div>
     </div>
+    <form class="acct-card pf-info-edit" id="info-form" novalidate hidden>
+      <div class="field">
+        <label for="e-name">Name</label>
+        <input id="e-name" type="text" autocomplete="name" maxlength="60" placeholder="Your full name">
+      </div>
+      <div class="field">
+        <label for="e-user">Username</label>
+        <input id="e-user" type="text" disabled>
+        <small class="field-hint">Your username is your login — it can’t be changed.</small>
+      </div>
+      <div class="field">
+        <label>Class</label>
+        <input id="e-class" type="text" disabled>
+        <small class="field-hint">Join or leave a class from the Competition card above.</small>
+      </div>
+      <div class="form-msg" id="info-msg"></div>
+      <div class="pf-info-actions">
+        <button class="btn" type="submit">Save changes</button>
+        <button class="btn secondary" id="info-cancel" type="button">Cancel</button>
+      </div>
+    </form>
     <p class="acct-note">Your name is private — only your teacher can see it. Classmates see only your username.</p>
 
     <!-- Account security -->
@@ -244,6 +268,38 @@
       }
     }
     renderComp();
+
+    // ---- Edit account information (Name) ----
+    var infoEdit = $('info-edit'), infoView = $('info-view'), infoForm = $('info-form'), infoMsg = $('info-msg');
+    function openInfo(open) {
+      infoForm.hidden = !open;
+      infoView.hidden = open;
+      infoEdit.textContent = open ? 'Close' : 'Edit';
+      infoEdit.setAttribute('aria-expanded', open ? 'true' : 'false');
+      if (open) {
+        var p = BV.getProfile() || {};
+        $('e-name').value = p.fullName || '';
+        $('e-user').value = p.alias || '';
+        $('e-class').value = BV.classDisplay() || 'Explorer';
+        infoMsg.className = 'form-msg';
+        $('e-name').focus();
+      }
+    }
+    infoEdit.addEventListener('click', function () { openInfo(infoForm.hidden); });
+    $('info-cancel').addEventListener('click', function () { openInfo(false); });
+    $('e-name').addEventListener('input', function () { infoMsg.className = 'form-msg'; });
+    infoForm.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var btn = this.querySelector('button[type="submit"]'); btn.disabled = true; var t = btn.textContent; btn.textContent = 'Saving…';
+      BV.updateName($('e-name').value).then(function (r) {
+        btn.disabled = false; btn.textContent = t;
+        if (r.ok) {
+          $('a-name').textContent = r.fullName || '—';
+          infoMsg.className = 'form-msg show ok'; infoMsg.textContent = 'Saved.';
+          setTimeout(function () { openInfo(false); }, 700);
+        } else { infoMsg.className = 'form-msg show err'; infoMsg.textContent = r.error; }
+      });
+    });
 
     // ---- Change password (collapsible) ----
     var pwToggle = $('pw-toggle'), pwForm = $('pw-form');

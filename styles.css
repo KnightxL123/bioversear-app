@@ -752,6 +752,16 @@ model-viewer.scene-energy { /* Energy — plasma glow (ready for its model) */
 form.acct-card { padding: 16px 14px 14px; }
 form.acct-card .btn { margin-top: 2px; }
 
+/* ---- Account information: edit ---- */
+.acct-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.acct-head .section-title { margin-bottom: 12px; }
+.pf-edit-btn { flex: 0 0 auto; font: inherit; font-size: 13px; font-weight: 700; color: var(--primary); background: var(--primary-tint); border: 1.5px solid var(--line); border-radius: 999px; padding: 6px 14px; cursor: pointer; }
+.pf-edit-btn:active { background: var(--primary-tint); }
+.field input:disabled { background: var(--primary-tint); color: var(--muted); cursor: not-allowed; }
+.field-hint { display: block; font-size: 12px; color: var(--muted); margin-top: 5px; }
+.pf-info-actions { display: flex; gap: 10px; }
+.pf-info-actions .btn { flex: 1; margin-top: 2px; }
+
 /* ---- Teacher dashboard ---- */
 .t-hello { font-size: 13px; color: var(--muted); margin: -4px 2px 16px; }
 .tclass { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; font: inherit; color: inherit; cursor: pointer; -webkit-appearance: none; appearance: none; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); padding: 14px; margin-bottom: 10px; }
